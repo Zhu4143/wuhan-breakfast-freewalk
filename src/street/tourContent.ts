@@ -5,9 +5,11 @@ export const tourSources=[
  {id:'T1',title:'湖北美食上线，你“鄂”了么？',by:'中国非物质文化遗产网 · 湖北省非遗保护中心',date:'2020-05-20',url:'https://www.ihchina.cn/special2020_gdfc_detail/20947.html',note:'支持“过早”的含义与轧面、掸面、调味等技艺环节。真实项目身份不属于虚构林记。'},
  {id:'T2',title:'武汉热干面：一碗烟火气，几多江湖情',by:'中国新闻网 · 武汉市政府转载',date:'2022-12-07',url:'https://www.wuhan.gov.cn/sy/kwh/202212/t20221207_2111754.shtml',note:'报道引述《汉口竹枝词》并介绍码头生活背景；李包的起源故事在原文中标为“相传”。'},
  {id:'T3',title:'武汉面窝',by:'湖北省文化和旅游厅 · 志说湖北',date:'2016-06-06',url:'https://wlt.hubei.gov.cn/bmdt/ztzl/zshb/201912/t20191226_1799589.shtml',note:'米浆、黄豆浆与专用铁勺；明确指出起源传说缺乏具体文字记载。'},
- {id:'T4',title:'武汉十大名点',by:'武汉市政府公开资料 · PDF 第 1—5 页',date:'2025-06 · 文件目录',url:'https://www.wuhan.gov.cn/wwwz/ywwz_1/H_1/NWP/202506/P020250626403473866731.pdf',note:'仅采用食物材料与形态；不据单一宣传资料判定热干面的唯一发明者。'},
+ {id:'T4',title:'武汉十大名点',by:'武汉市政府公开资料 · PDF 第 1—15 页',date:'2025-06 · 文件目录',url:'https://www.wuhan.gov.cn/wwwz/ywwz_1/H_1/NWP/202506/P020250626403473866731.pdf',note:'采用热干面、豆皮、面窝、汤包、糊汤粉与重油烧麦的材料与形态；不据单一宣传资料判定唯一发明者。'},
  {id:'T5',title:'探寻武汉老字号的活态传承',by:'武汉市商务局',date:'2025-06-17',url:'https://sw.wuhan.gov.cn/xwdt/gzdt/202506/t20250617_2596270.shtml',note:'记录武汉图书馆举办的“过早”文化与传承讲座，支持当代文化传播的介绍。'},
  {id:'T6',title:'武汉三鲜豆皮成了“世界的味道”',by:'长江日报 · 武汉市政府转载',date:'2025-03-21',url:'https://www.wuhan.gov.cn/sy/whyw/202503/t20250321_2555376.shtml',note:'采用米浆、鸡蛋薄皮、糯米及肉、香菇、笋丁的材料与层次；不推定唯一配方、发明者或虚构豆皮铺的真实传承身份。'},
+ {id:'T7',title:'跟着味蕾去旅行！在武汉“过早”是怎样一种体验',by:'武汉市商务局 · 媒体报道转载',date:'2025-10-03',url:'https://sw.wuhan.gov.cn/xwdt/mtbd/202510/t20251003_2656165.shtml',note:'支持糊汤粉的鱼汤、米粉、胡椒与油条搭配；各家配方不同。虚构的何记不是报道中的真实店铺。'},
+ {id:'T8',title:'早晚微凉~武汉新生“暖身”美食指南这就奉上',by:'武汉市商务局 · 武汉商务',date:'2026-09-14',url:'https://sw.wuhan.gov.cn/xwdt/gzdt/202609/t20260914_2847335.shtml',note:'支持武汉烧麦的重油、胡椒风味与汤包的薄皮、鲜汤特点。店名、人物、年代变化与开门时刻均为创作。'},
 ] as const;
 export const tourStops:TourStop[]=[
  {id:'gate',name:'走进清晨',position:[.4,2.45,20],look:[-.3,2.7,-3],dawn:.20,pages:[
@@ -46,6 +48,9 @@ export const foodNotes=[
  {id:'noodle',name:'热干面',image:'storybook/bowl.webp',line:'碱水面 · 芝麻酱',text:'趁热拌开，认识这一碗的酱香。',sources:['T1','T4']},
  {id:'doupi',name:'三鲜豆皮',image:'objects/doupi.svg',line:'金色外层 · 糯米与馅料',text:'从层次与形状，看看一口锅的分寸。',sources:['T4']},
  {id:'mianwo',name:'面窝',image:'objects/mianwo.svg',line:'米与黄豆 · 厚边薄心',text:'专用铁勺，把口感留在了形状里。',sources:['T3']},
+ {id:'east-middle',name:'鲜鱼糊汤粉',image:'objects/hutangfen-v11.svg',line:'鱼汤与米粉 · 胡椒暖香',text:'浓汤裹住细粉，油条蘸一口清晨。',sources:['T4','T7']},
+ {id:'west-end',name:'重油烧梅',image:'objects/shaomai-v11.svg',line:'糯米与肉丁 · 胡椒香',text:'褶口收住软糯，掀笼是一阵热气。',sources:['T4','T8']},
+ {id:'east-end',name:'鲜肉汤包',image:'objects/tangbao-v11.svg',line:'薄皮鲜肉 · 一口汤汁',text:'小笼刚揭开，先慢慢尝这一口。',sources:['T4','T8']},
 ] as const;
 export type FoodNote=typeof foodNotes[number]['id'];
 export const memoryChoices=['这一口芝麻香','手上的分寸','街坊的一声招呼'] as const;

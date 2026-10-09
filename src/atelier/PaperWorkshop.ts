@@ -1,10 +1,14 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {isMobileScene,sceneImageUrl} from './sceneAssets.ts';
 
 /** Geometry supplies depth; image assets supply the painted detail. All resources belong to this workshop. */
 export class PaperWorkshop {
   illustrated=false;
+  readonly mobile=isMobileScene();
+  onImageLoaded:((count:number)=>void)|undefined;
+  private loadedImages=0;
   geometries = new Set<T.BufferGeometry>();
   materials = new Set<T.Material>();
   textures = new Set<T.Texture>();
@@ -76,7 +80,7 @@ export class PaperWorkshop {
     return this.mesh(parent,new T.TubeGeometry(new T.CatmullRomCurve3(points),24,radius,5,false),this.material(color));
   }
   sign(parent:T.Object3D, text:string, w:number, h:number, p:number[], bg:string, ink:string, small='') {
-    const c=document.createElement('canvas');c.width=1536;c.height=Math.round(1536*h/w);const x=c.getContext('2d')!;
+    const c=document.createElement('canvas');c.width=this.mobile?512:1536;c.height=Math.round(c.width*h/w);const x=c.getContext('2d')!;
     x.fillStyle=bg;x.fillRect(0,0,c.width,c.height);
     x.strokeStyle=ink;x.globalAlpha=.5;x.lineWidth=3;x.strokeRect(15,15,c.width-30,c.height-30);x.globalAlpha=1;
     x.textAlign='center';x.textBaseline='middle';x.fillStyle=ink;
@@ -88,7 +92,7 @@ export class PaperWorkshop {
     const edge=this.material('#b9a17c');return this.mesh(parent,new T.BoxGeometry(w,h,h<.4?.008:.04),[edge,edge,edge,edge,front,edge],p);
   }
   async image(url:string) {
-    const img=new Image();img.src=url;await img.decode();return img;
+    const img=new Image();img.src=sceneImageUrl(url,this.mobile);await img.decode();this.onImageLoaded?.(++this.loadedImages);return img;
   }
   print(parent:T.Object3D, image:HTMLImageElement, w:number, h:number, p:number[], cutout=false,atlas=false) {
     let material=!cutout&&!atlas?this.prints.get(image.src):undefined;
@@ -193,6 +197,9 @@ export class PaperWorkshop {
     }
   }
   inkContours(parent:T.Object3D){
+    // Mobile keeps SceneFinish's painted edge pass; avoid constructing a second
+    // full set of topology-derived lines before the street can become interactive.
+    if(this.mobile)return;
     const ink=this.ownMaterial(new T.LineBasicMaterial({color:'#574e44',transparent:true,opacity:.53,depthWrite:false}));
     const meshes:T.Mesh[]=[];parent.traverse(o=>{if(o instanceof T.Mesh&&o.material instanceof T.MeshStandardMaterial&&!o.material.map&&!o.userData.noAO)meshes.push(o);});
     for(const mesh of meshes){const geo=new T.EdgesGeometry(mesh.geometry,32);this.geometries.add(geo);const line=new T.LineSegments(geo,ink);line.userData.noAO=true;line.renderOrder=1;mesh.add(line);}

@@ -1,7 +1,7 @@
 {
   "name": "wuhan-breakfast-story",
   "private": true,
-  "version": "9.0.0",
+  "version": "13.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

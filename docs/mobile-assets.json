@@ -1,0 +1,786 @@
+[
+  {
+    "original": "storybook/bicycle-passing-v12.webp",
+    "mobile": "mobile-v1/storybook/bicycle-passing-v12.webp",
+    "originalBytes": 185912,
+    "mobileBytes": 121920,
+    "originalSize": [
+      1024,
+      683
+    ],
+    "mobileSize": [
+      896,
+      598
+    ],
+    "originalPixels": 699392,
+    "mobilePixels": 535808
+  },
+  {
+    "original": "storybook/bowl.webp",
+    "mobile": "mobile-v1/storybook/bowl.webp",
+    "originalBytes": 424566,
+    "mobileBytes": 100018,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/courtyard-row.webp",
+    "mobile": "mobile-v1/storybook/courtyard-row.webp",
+    "originalBytes": 731702,
+    "mobileBytes": 96144,
+    "originalSize": [
+      2172,
+      724
+    ],
+    "mobileSize": [
+      896,
+      299
+    ],
+    "originalPixels": 1572528,
+    "mobilePixels": 267904
+  },
+  {
+    "original": "storybook/cover-v7.png",
+    "mobile": "mobile-v1/storybook/cover-v7.webp",
+    "originalBytes": 3046756,
+    "mobileBytes": 89824,
+    "originalSize": [
+      1672,
+      941
+    ],
+    "mobileSize": [
+      832,
+      468
+    ],
+    "originalPixels": 1573352,
+    "mobilePixels": 389376
+  },
+  {
+    "original": "storybook/dawn-panorama.webp",
+    "mobile": "mobile-v1/storybook/dawn-panorama.webp",
+    "originalBytes": 321554,
+    "mobileBytes": 26212,
+    "originalSize": [
+      2172,
+      724
+    ],
+    "mobileSize": [
+      896,
+      299
+    ],
+    "originalPixels": 1572528,
+    "mobilePixels": 267904
+  },
+  {
+    "original": "storybook/doupi-interior-v7.png",
+    "mobile": "mobile-v1/storybook/doupi-interior-v7.webp",
+    "originalBytes": 3124170,
+    "mobileBytes": 124114,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/doupi-keeper-present-v8.webp",
+    "mobile": "mobile-v1/storybook/doupi-keeper-present-v8.webp",
+    "originalBytes": 926304,
+    "mobileBytes": 80972,
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "mobileSize": [
+      640,
+      640
+    ],
+    "originalPixels": 1572516,
+    "mobilePixels": 409600
+  },
+  {
+    "original": "storybook/doupi-keeper-v8.webp",
+    "mobile": "mobile-v1/storybook/doupi-keeper-v8.webp",
+    "originalBytes": 962462,
+    "mobileBytes": 81496,
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "mobileSize": [
+      640,
+      640
+    ],
+    "originalPixels": 1572516,
+    "mobilePixels": 409600
+  },
+  {
+    "original": "storybook/doupi-wall-past-v8.webp",
+    "mobile": "mobile-v1/storybook/doupi-wall-past-v8.webp",
+    "originalBytes": 410344,
+    "mobileBytes": 67084,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/doupi-wall-present-v8.webp",
+    "mobile": "mobile-v1/storybook/doupi-wall-present-v8.webp",
+    "originalBytes": 363920,
+    "mobileBytes": 57898,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/east-end-keeper-past-v11.webp",
+    "mobile": "mobile-v1/storybook/east-end-keeper-past-v11.webp",
+    "originalBytes": 101464,
+    "mobileBytes": 42968,
+    "originalSize": [
+      342,
+      896
+    ],
+    "mobileSize": [
+      244,
+      640
+    ],
+    "originalPixels": 306432,
+    "mobilePixels": 156160
+  },
+  {
+    "original": "storybook/east-end-keeper-present-v11.webp",
+    "mobile": "mobile-v1/storybook/east-end-keeper-present-v11.webp",
+    "originalBytes": 84580,
+    "mobileBytes": 36174,
+    "originalSize": [
+      312,
+      896
+    ],
+    "mobileSize": [
+      223,
+      640
+    ],
+    "originalPixels": 279552,
+    "mobilePixels": 142720
+  },
+  {
+    "original": "storybook/east-end-wall-past-v11-1.webp",
+    "mobile": "mobile-v1/storybook/east-end-wall-past-v11-1.webp",
+    "originalBytes": 517976,
+    "mobileBytes": 105570,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/east-end-wall-present-v11-1.webp",
+    "mobile": "mobile-v1/storybook/east-end-wall-present-v11-1.webp",
+    "originalBytes": 452740,
+    "mobileBytes": 82894,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/east-middle-keeper-past-v11.webp",
+    "mobile": "mobile-v1/storybook/east-middle-keeper-past-v11.webp",
+    "originalBytes": 115470,
+    "mobileBytes": 50934,
+    "originalSize": [
+      485,
+      896
+    ],
+    "mobileSize": [
+      346,
+      640
+    ],
+    "originalPixels": 434560,
+    "mobilePixels": 221440
+  },
+  {
+    "original": "storybook/east-middle-keeper-present-v11.webp",
+    "mobile": "mobile-v1/storybook/east-middle-keeper-present-v11.webp",
+    "originalBytes": 106492,
+    "mobileBytes": 47602,
+    "originalSize": [
+      431,
+      896
+    ],
+    "mobileSize": [
+      308,
+      640
+    ],
+    "originalPixels": 386176,
+    "mobilePixels": 197120
+  },
+  {
+    "original": "storybook/east-middle-wall-past-v11-1.webp",
+    "mobile": "mobile-v1/storybook/east-middle-wall-past-v11-1.webp",
+    "originalBytes": 580770,
+    "mobileBytes": 122066,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/east-middle-wall-present-v11-1.webp",
+    "mobile": "mobile-v1/storybook/east-middle-wall-present-v11-1.webp",
+    "originalBytes": 468478,
+    "mobileBytes": 89516,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/interior-present.webp",
+    "mobile": "mobile-v1/storybook/interior-present.webp",
+    "originalBytes": 445012,
+    "mobileBytes": 82734,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/interior.webp",
+    "mobile": "mobile-v1/storybook/interior.webp",
+    "originalBytes": 569188,
+    "mobileBytes": 91188,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/keeper-atlas.webp",
+    "mobile": "mobile-v1/storybook/keeper-atlas.webp",
+    "originalBytes": 292174,
+    "mobileBytes": 130388,
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "mobileSize": [
+      1008,
+      1008
+    ],
+    "originalPixels": 1572516,
+    "mobilePixels": 1016064
+  },
+  {
+    "original": "storybook/mianwo-interior-v7.png",
+    "mobile": "mobile-v1/storybook/mianwo-interior-v7.webp",
+    "originalBytes": 3376986,
+    "mobileBytes": 131980,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/mianwo-present-v9.png",
+    "mobile": "mobile-v1/storybook/mianwo-present-v9.webp",
+    "originalBytes": 2792998,
+    "mobileBytes": 106952,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/pedestrian-commuter-past-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-commuter-past-v13.webp",
+    "originalBytes": 58356,
+    "mobileBytes": 26556,
+    "originalSize": [
+      294,
+      896
+    ],
+    "mobileSize": [
+      210,
+      640
+    ],
+    "originalPixels": 263424,
+    "mobilePixels": 134400
+  },
+  {
+    "original": "storybook/pedestrian-commuter-present-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-commuter-present-v13.webp",
+    "originalBytes": 65246,
+    "mobileBytes": 28148,
+    "originalSize": [
+      298,
+      896
+    ],
+    "mobileSize": [
+      213,
+      640
+    ],
+    "originalPixels": 267008,
+    "mobilePixels": 136320
+  },
+  {
+    "original": "storybook/pedestrian-elder-past-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-elder-past-v13.webp",
+    "originalBytes": 85368,
+    "mobileBytes": 37240,
+    "originalSize": [
+      347,
+      896
+    ],
+    "mobileSize": [
+      248,
+      640
+    ],
+    "originalPixels": 310912,
+    "mobilePixels": 158720
+  },
+  {
+    "original": "storybook/pedestrian-elder-present-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-elder-present-v13.webp",
+    "originalBytes": 82044,
+    "mobileBytes": 36800,
+    "originalSize": [
+      351,
+      896
+    ],
+    "mobileSize": [
+      251,
+      640
+    ],
+    "originalPixels": 314496,
+    "mobilePixels": 160640
+  },
+  {
+    "original": "storybook/pedestrian-grandmother-past-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-grandmother-past-v13.webp",
+    "originalBytes": 89448,
+    "mobileBytes": 37620,
+    "originalSize": [
+      398,
+      896
+    ],
+    "mobileSize": [
+      284,
+      640
+    ],
+    "originalPixels": 356608,
+    "mobilePixels": 181760
+  },
+  {
+    "original": "storybook/pedestrian-grandmother-present-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-grandmother-present-v13.webp",
+    "originalBytes": 77800,
+    "mobileBytes": 33938,
+    "originalSize": [
+      319,
+      896
+    ],
+    "mobileSize": [
+      228,
+      640
+    ],
+    "originalPixels": 285824,
+    "mobilePixels": 145920
+  },
+  {
+    "original": "storybook/pedestrian-neighbor-past-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-neighbor-past-v13.webp",
+    "originalBytes": 70640,
+    "mobileBytes": 30310,
+    "originalSize": [
+      306,
+      896
+    ],
+    "mobileSize": [
+      219,
+      640
+    ],
+    "originalPixels": 274176,
+    "mobilePixels": 140160
+  },
+  {
+    "original": "storybook/pedestrian-neighbor-present-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-neighbor-present-v13.webp",
+    "originalBytes": 59124,
+    "mobileBytes": 25968,
+    "originalSize": [
+      281,
+      896
+    ],
+    "mobileSize": [
+      201,
+      640
+    ],
+    "originalPixels": 251776,
+    "mobilePixels": 128640
+  },
+  {
+    "original": "storybook/pedestrian-schoolgirl-past-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-schoolgirl-past-v13.webp",
+    "originalBytes": 59592,
+    "mobileBytes": 25526,
+    "originalSize": [
+      278,
+      896
+    ],
+    "mobileSize": [
+      199,
+      640
+    ],
+    "originalPixels": 249088,
+    "mobilePixels": 127360
+  },
+  {
+    "original": "storybook/pedestrian-schoolgirl-present-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-schoolgirl-present-v13.webp",
+    "originalBytes": 77818,
+    "mobileBytes": 35126,
+    "originalSize": [
+      288,
+      896
+    ],
+    "mobileSize": [
+      206,
+      640
+    ],
+    "originalPixels": 258048,
+    "mobilePixels": 131840
+  },
+  {
+    "original": "storybook/pedestrian-worker-past-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-worker-past-v13.webp",
+    "originalBytes": 69450,
+    "mobileBytes": 29354,
+    "originalSize": [
+      338,
+      896
+    ],
+    "mobileSize": [
+      241,
+      640
+    ],
+    "originalPixels": 302848,
+    "mobilePixels": 154240
+  },
+  {
+    "original": "storybook/pedestrian-worker-present-v13.webp",
+    "mobile": "mobile-v1/storybook/pedestrian-worker-present-v13.webp",
+    "originalBytes": 69514,
+    "mobileBytes": 29688,
+    "originalSize": [
+      326,
+      896
+    ],
+    "mobileSize": [
+      233,
+      640
+    ],
+    "originalPixels": 292096,
+    "mobilePixels": 149120
+  },
+  {
+    "original": "storybook/plane-tree.webp",
+    "mobile": "mobile-v1/storybook/plane-tree.webp",
+    "originalBytes": 749876,
+    "mobileBytes": 83698,
+    "originalSize": [
+      1024,
+      1536
+    ],
+    "mobileSize": [
+      341,
+      512
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 174592
+  },
+  {
+    "original": "storybook/residential-indigo.webp",
+    "mobile": "mobile-v1/storybook/residential-indigo.webp",
+    "originalBytes": 631688,
+    "mobileBytes": 125922,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/residential-ochre.webp",
+    "mobile": "mobile-v1/storybook/residential-ochre.webp",
+    "originalBytes": 605516,
+    "mobileBytes": 119654,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/successor-atlas.webp",
+    "mobile": "mobile-v1/storybook/successor-atlas.webp",
+    "originalBytes": 277524,
+    "mobileBytes": 134934,
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "mobileSize": [
+      1008,
+      1008
+    ],
+    "originalPixels": 1572516,
+    "mobilePixels": 1016064
+  },
+  {
+    "original": "storybook/vine-cluster.webp",
+    "mobile": "mobile-v1/storybook/vine-cluster.webp",
+    "originalBytes": 652080,
+    "mobileBytes": 109704,
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "mobileSize": [
+      512,
+      512
+    ],
+    "originalPixels": 1572516,
+    "mobilePixels": 262144
+  },
+  {
+    "original": "storybook/visitor-camera.webp",
+    "mobile": "mobile-v1/storybook/visitor-camera.webp",
+    "originalBytes": 172406,
+    "mobileBytes": 51246,
+    "originalSize": [
+      1024,
+      1536
+    ],
+    "mobileSize": [
+      597,
+      896
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/visitor-reader.webp",
+    "mobile": "mobile-v1/storybook/visitor-reader.webp",
+    "originalBytes": 144364,
+    "mobileBytes": 41938,
+    "originalSize": [
+      1024,
+      1536
+    ],
+    "mobileSize": [
+      597,
+      896
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/walker-basket.webp",
+    "mobile": "mobile-v1/storybook/walker-basket.webp",
+    "originalBytes": 228894,
+    "mobileBytes": 59094,
+    "originalSize": [
+      1024,
+      1536
+    ],
+    "mobileSize": [
+      597,
+      896
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/walker-woman.webp",
+    "mobile": "mobile-v1/storybook/walker-woman.webp",
+    "originalBytes": 182560,
+    "mobileBytes": 49850,
+    "originalSize": [
+      1024,
+      1536
+    ],
+    "mobileSize": [
+      597,
+      896
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/west-end-keeper-past-v11.webp",
+    "mobile": "mobile-v1/storybook/west-end-keeper-past-v11.webp",
+    "originalBytes": 108932,
+    "mobileBytes": 46086,
+    "originalSize": [
+      372,
+      896
+    ],
+    "mobileSize": [
+      266,
+      640
+    ],
+    "originalPixels": 333312,
+    "mobilePixels": 170240
+  },
+  {
+    "original": "storybook/west-end-keeper-present-v11.webp",
+    "mobile": "mobile-v1/storybook/west-end-keeper-present-v11.webp",
+    "originalBytes": 111334,
+    "mobileBytes": 47824,
+    "originalSize": [
+      378,
+      896
+    ],
+    "mobileSize": [
+      270,
+      640
+    ],
+    "originalPixels": 338688,
+    "mobilePixels": 172800
+  },
+  {
+    "original": "storybook/west-end-wall-past-v11-1.webp",
+    "mobile": "mobile-v1/storybook/west-end-wall-past-v11-1.webp",
+    "originalBytes": 502240,
+    "mobileBytes": 105724,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "storybook/west-end-wall-present-v11-1.webp",
+    "mobile": "mobile-v1/storybook/west-end-wall-present-v11-1.webp",
+    "originalBytes": 360542,
+    "mobileBytes": 69704,
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "mobileSize": [
+      896,
+      597
+    ],
+    "originalPixels": 1572864,
+    "mobilePixels": 534912
+  },
+  {
+    "original": "atelier/timber-grain.webp",
+    "mobile": "mobile-v1/atelier/timber-grain.webp",
+    "originalBytes": 689348,
+    "mobileBytes": 48994,
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "mobileSize": [
+      512,
+      512
+    ],
+    "originalPixels": 1572516,
+    "mobilePixels": 262144
+  }
+]

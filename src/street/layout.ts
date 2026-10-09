@@ -5,9 +5,9 @@ export const shopPlots:ShopPlot[]=[
  {id:'noodle',name:'林记热干面',status:'open',x:-7.6,z:5,rotation:Math.PI/2,width:9.4,depth:5.2,height:6.1},
  {id:'doupi',name:'豆皮铺',status:'reserved',x:7.6,z:3,rotation:-Math.PI/2,width:9.4,depth:5.2,height:6.1},
  {id:'mianwo',name:'面窝摊',status:'reserved',x:-7.6,z:-6,rotation:Math.PI/2,width:9.4,depth:5.2,height:6.1},
- {id:'east-middle',name:'东侧中段',status:'reserved',x:7.6,z:-8,rotation:-Math.PI/2,width:9.4,depth:5.2,height:6.1},
- {id:'west-end',name:'西侧街尾',status:'reserved',x:-7.6,z:-17,rotation:Math.PI/2,width:9.4,depth:5.2,height:6.1},
- {id:'east-end',name:'东侧街尾',status:'reserved',x:7.6,z:-19,rotation:-Math.PI/2,width:9.4,depth:5.2,height:6.1},
+ {id:'east-middle',name:'何记糊汤粉',status:'reserved',x:7.6,z:-8,rotation:-Math.PI/2,width:9.4,depth:5.2,height:6.1},
+ {id:'west-end',name:'桂姨烧梅铺',status:'reserved',x:-7.6,z:-17,rotation:Math.PI/2,width:9.4,depth:5.2,height:6.1},
+ {id:'east-end',name:'巷尾汤包馆',status:'reserved',x:7.6,z:-19,rotation:-Math.PI/2,width:9.4,depth:5.2,height:6.1},
 ];
 export const streetViews:Record<StreetView,{label:string;caption:string;position:[number,number,number];target:[number,number,number]}>= {
  entry:{label:'街口',caption:'太阳刚越过屋脊，早点摊已经醒了。',position:[14,19,32],target:[-4,4,-3]},

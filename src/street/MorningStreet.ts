@@ -16,14 +16,22 @@ import type {TourStop} from './tourContent';
 import {places,type PlaceId} from './exploreContent';
 import {FoodStalls} from './FoodStalls';
 import {DoupiShop} from './DoupiShop';
+import {BreakfastKitchen} from './BreakfastKitchen';
+import {breakfastShops} from './breakfastShops';
 import type {ShopModule} from './ShopModule';
 import {addStreetPatina} from './StreetPatina';
 import {FreeWalk} from './FreeWalk';
 import {AgedPaving} from './AgedPaving';
 import {StreetEras} from './StreetEras';
+import {bodySegmentClear,type WalkObstacle} from './walkNavigation';
+import {MarketAtmosphere} from './MarketAtmosphere';
+import {clampMorning,openShopCount,pedestrianPresence,morningTime} from './marketTime';
+import type {MarketSoundscape} from './MarketSoundscape';
+import {BicyclePass} from './BicyclePass';
+import {pedestrianProfiles} from './pedestrianProfiles';
 
 const V=(x:number,y:number,z:number)=>new T.Vector3(x,y,z);
-type Pedestrian={group:T.Group;print:T.Mesh;prints:T.Mesh[];start:T.Vector3;end:T.Vector3;phase:number;speed:number;moving:boolean;};
+type Pedestrian={group:T.Group;print:T.Mesh;prints:T.Mesh[];materials:T.Material[];presence:number;start:T.Vector3;end:T.Vector3;phase:number;speed:number;moving:boolean;radius:number;time:number;};
 
 export class MorningStreet implements SceneExtension{
   readonly illustrated=true;
@@ -43,13 +51,24 @@ export class MorningStreet implements SceneExtension{
   private foodStalls:FoodStalls|null=null;
   private shops=new Map<string,ShopModule>();
   private free:FreeWalk|null=null;private paving:AgedPaving|null=null;private eras:StreetEras|null=null;private markerEnabled=false;
+  private walkProps:WalkObstacle[]=[];private pedestrianTime=0;
+  private morning:MarketAtmosphere|null=null;private morningTarget=0;private renderer!:T.WebGLRenderer;private eraProgress=0;private frameDt=0;
+  private soundscape:MarketSoundscape|null=null;private bicyclePass:BicyclePass|null=null;private experienceActive=false;
+  attachSoundscape(sound:MarketSoundscape){this.soundscape=sound;}
+  setExperienceActive(active:boolean){this.experienceActive=active;this.soundscape?.setActive(active);}
   get ownsPointer(){return !!this.free;}
-  enableFreeRoam(onManual:()=>void){this.free=new FreeWalk(this.host,v=>this.onTravel?.(v),onManual);this.host.dataset.walkMode='first-person';}
+  enableFreeRoam(onManual:()=>void){this.free=new FreeWalk(this.host,v=>this.onTravel?.(v),onManual,()=>this.navigationObstacles());this.dawn=0;this.host.dataset.walkMode='first-person';}
+  private navigationObstacles():WalkObstacle[]{const bike=this.bicyclePass?.obstacle;return [...this.walkProps,...this.people.filter(p=>p.group.visible).map(p=>({id:p.group.name,x:p.group.position.x,z:p.group.position.z,radius:p.radius})),...(bike?[bike]:[])];}
+  private blockWalkProp(object:T.Object3D,id:string){
+    object.updateWorldMatrix(true,true);const box=new T.Box3().setFromObject(object),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3());
+    this.walkProps.push({id,x:center.x,z:center.z,radius:Math.hypot(size.x,size.z)/2});
+  }
   enableControls(enabled:boolean,blocked=false){this.markerEnabled=enabled&&!blocked;this.free?.setEnabled(enabled,blocked);}
   joystick(x:number,y:number){this.free?.joystick(x,y);}
   zoom(delta:number){this.free?.zoom(delta);}
   cancelWalk(){this.free?.cancel();}
-  beforeFrame(dt:number){this.free?.update(dt);}
+  beforeFrame(dt:number){this.frameDt=Math.min(Math.max(dt,0),1);if(this.morning)this.dawn=T.MathUtils.damp(this.dawn,this.morningTarget,4,this.frameDt);this.free?.update(dt);}
+  setMarketTime(progress:number){this.morningTarget=clampMorning(progress);}
   constructor(private host:HTMLDivElement,private onTravel?:(moving:boolean)=>void){if(onTravel)this.walk=new FirstPersonWalk(onTravel);}
   walkTo(index:number,animate:boolean,custom?:TourStop){if(this.free&&custom)this.free.go(custom);else this.walk?.go(index,animate,custom);}
   setWalkMap(value:boolean){this.walkMap=value;this.host.dataset.walkMode=this.free?'first-person':value?'map':'first-person';}
@@ -57,12 +76,12 @@ export class MorningStreet implements SceneExtension{
   speakAtShop(id:PlaceId){this.shops.get(id)?.speak();}
   finishWalk(){this.walk?.finish();this.dawnTween?.progress(1);}
   configure(scene:T.Scene,renderer:T.WebGLRenderer,camera:T.PerspectiveCamera,shop:T.Group){
-    this.scene=scene;this.shop=shop;
+    this.scene=scene;this.shop=shop;this.renderer=renderer;
     scene.fog=new T.FogExp2('#d6e6df',.003);camera.fov=39;camera.far=260;camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(devicePixelRatio,matchMedia('(pointer:coarse)').matches?1.25:1.75));renderer.toneMappingExposure=.94;
     scene.children.forEach(o=>{
       if(o instanceof T.HemisphereLight){o.color.set('#e4eeea');o.groundColor.set('#d2bfa0');o.intensity=.88;}
-      if(o instanceof T.DirectionalLight&&o.castShadow){this.sun=o;o.position.set(18,19,-58);o.target.position.set(0,0,-6);scene.add(o.target);o.color.set('#ffd18f');o.intensity=3.2;o.shadow.mapSize.set(4096,4096);Object.assign(o.shadow.camera,{left:-27,right:27,top:28,bottom:-28,near:1,far:130});o.shadow.camera.updateProjectionMatrix();o.shadow.normalBias=.025;o.shadow.bias=-.00004;}
+      if(o instanceof T.DirectionalLight&&o.castShadow){this.sun=o;o.position.set(18,19,-58);o.target.position.set(0,0,-6);scene.add(o.target);o.color.set('#ffd18f');o.intensity=3.2;const shadowSize=matchMedia('(pointer: coarse), (max-width: 700px)').matches?2048:4096;o.shadow.mapSize.set(shadowSize,shadowSize);Object.assign(o.shadow.camera,{left:-27,right:27,top:28,bottom:-28,near:1,far:130});o.shadow.camera.updateProjectionMatrix();o.shadow.normalBias=.025;o.shadow.bias=-.00004;}
       else if(o instanceof T.DirectionalLight){o.position.set(-12,13,14);o.intensity=.60;o.color.set('#e4e8da');}
     });
     const plot=shopPlots[0];shop.position.set(plot.x,.10,plot.z);shop.rotation.y=plot.rotation;shop.updateMatrixWorld();
@@ -70,17 +89,34 @@ export class MorningStreet implements SceneExtension{
     scene.add(this.scenery,this.planning);
   }
   async build(w:PaperWorkshop){
-    const names=['dawn-panorama','residential-ochre','residential-indigo','walker-basket','walker-woman','visitor-camera','visitor-reader','plane-tree','courtyard-row','vine-cluster'];
-    const images=await Promise.all(names.map(n=>w.image(import.meta.env.BASE_URL+'assets/storybook/'+n+'.webp')));if(this.disposed)return;
-    const [sky,ochre,indigo]=images,portraits=images.slice(3,7),[tree,row,vine]=images.slice(7);
+    const base=import.meta.env.BASE_URL+'assets/storybook/';
+    // Start independent image batches together; geometry and era behavior are unchanged.
+    const bikeImage=this.free?w.image(base+'bicycle-passing-v12.webp'):null;
+    const stallImages=this.explorerMarkers.size?Promise.all(['doupi-wall-past-v8.webp','doupi-wall-present-v8.webp','doupi-keeper-v8.webp','doupi-keeper-present-v8.webp','mianwo-interior-v7.png','mianwo-present-v9.png'].map(n=>w.image(base+n))):null;
+    const kitchenImages=this.explorerMarkers.size?Promise.all([
+      Promise.all(breakfastShops.map(s=>Promise.all(['past','present'].map(era=>w.image(base+s.id+'-keeper-'+era+'-v11.webp'))))),
+      Promise.all(breakfastShops.map(s=>Promise.all(['past','present'].map(era=>w.image(base+s.id+'-wall-'+era+'-v11-1.webp'))))),
+    ]):null;
+    // Observe every speculative batch immediately, including failure or unmount during another batch.
+    const pendingImages=Promise.all([bikeImage,stallImages,kitchenImages]);void pendingImages.catch(()=>{});
+    const names=['dawn-panorama','residential-ochre','residential-indigo','plane-tree','courtyard-row','vine-cluster'];
+    const [images,portraits]=await Promise.all([
+      Promise.all(names.map(n=>w.image(base+n+'.webp'))),
+      Promise.all(pedestrianProfiles.map(p=>Promise.all([w.image(base+p.past),w.image(base+p.present)]))),
+    ]);if(this.disposed)return;
+    const [sky,ochre,indigo,tree,row,vine]=images;
     this.ground(w);this.architecture(w,ochre,indigo);this.streetLife(w,portraits);this.atmosphere(w,sky);
-    if(this.explorerMarkers.size){
-      const base=import.meta.env.BASE_URL+'assets/storybook/';
-      const [past,present,keeper,keeperToday,mianwo,mianwoToday]=await Promise.all(['doupi-wall-past-v8.webp','doupi-wall-present-v8.webp','doupi-keeper-v8.webp','doupi-keeper-present-v8.webp','mianwo-interior-v7.png','mianwo-present-v9.png'].map(n=>w.image(base+n)));
+    const [image,stalls,kitchens]=await pendingImages;if(this.disposed)return;
+    if(image)this.bicyclePass=new BicyclePass(w,this.scenery,image);
+    if(stalls&&kitchens){
+      const [past,present,keeper,keeperToday,mianwo,mianwoToday]=stalls;
       if(this.disposed)return;
       const doupi=new DoupiShop(w,{past,present,keeper,keeperToday},this.host);
       doupi.mount(this.sockets.get('doupi')!);this.shops.set(doupi.id,doupi);
       this.foodStalls=new FoodStalls(w,this.sockets,[mianwo,mianwoToday],this.host);
+      const [portraits,walls]=kitchens;
+      if(this.disposed)return;
+      breakfastShops.forEach((spec,i)=>{const kitchen=new BreakfastKitchen(w,spec,portraits[i],{past:walls[i][0],present:walls[i][1]},this.host);kitchen.mount(this.sockets.get(spec.id)!);this.shops.set(spec.id,kitchen);});
     }
     addStreetPatina(w,this.scenery,this.sockets);
     this.sockets.forEach((socket,id)=>upperRoomDetails(w,socket,shopPlots.findIndex(p=>p.id===id),vine));
@@ -89,21 +125,22 @@ export class MorningStreet implements SceneExtension{
     this.rays=new MorningRays(w,this.scenery);
     const menu=new T.Group();menu.position.set(-4.7,0,-10.8);menu.rotation.y=Math.PI/2;this.scenery.add(menu);
     w.box(menu,[2.6,2.8,.10],[0,2.22,0],'#809e8c','wood');w.sign(menu,'一 街 百 味',2.4,.60,[0,3.19,.065],'#eee0be','#657c66');
-    w.sign(menu,'热干面\n三鲜豆皮\n面窝',1.96,1.43,[0,2.14,.072],'#eee0be','#826d50');
+    w.sign(menu,'热干面 · 三鲜豆皮\n面窝 · 鲜鱼糊汤粉\n烧梅 · 鲜肉汤包',1.96,1.43,[0,2.14,.072],'#eee0be','#826d50');
     w.sign(menu,'过早小札 · 慢慢认识',2.20,.23,[0,1.19,.07],'#eee0be','#657c66');
     for(const x of [-1.15,1.15])w.box(menu,[.09,3.64,.12],[x,1.83,-.08],'#997959','wood');
     // A cutaway wall must keep its identity, but its window lattice and flowerpots can
     // share draws inside that wall. Do this before the whole street's static batch.
     this.eras=new StreetEras(w,this.scenery,this.sockets);
     this.paving=new AgedPaving(w,this.scenery);
+    if(this.free)this.morning=new MarketAtmosphere(this.scene,this.sun,this.renderer,this.sky!,this.sunDisc!,this.sunGlow!,w,this.sockets);
     this.cutawayWalls.forEach(({group})=>{w.batchStatic(group);w.batchScenery(group);});
     this.people.forEach(p=>p.group.userData.animationRoot=true);
     [...this.branches,...this.laundry].forEach(g=>g.userData.animationRoot=true);
     w.batchStatic(this.scenery);w.batchScenery(this.scenery);w.inkContours(this.scenery);this.setDawn(this.dawn);
-    this.host.dataset.reservedPlots=String(shopPlots.filter(p=>p.status==='reserved').length-(this.foodStalls?2:0));
+    this.host.dataset.reservedPlots=String(this.explorerMarkers.size?0:shopPlots.filter(p=>p.status==='reserved').length);
     this.host.dataset.streetPeople=String(this.people.length);this.host.dataset.streetView=this.viewId;
     this.host.dataset.streetAssets=String(images.length);
-    this.host.dataset.foodCounters=this.foodStalls?'3':'1';this.host.dataset.pavingWear='380';this.host.dataset.eraBuildings='6';this.host.dataset.pedestrianHeight='3.15';this.host.dataset.pavingDetail='stone-grain-cracks-moss-repairs';
+    this.host.dataset.foodCounters=this.foodStalls?'6':'1';this.host.dataset.pavingWear='380';this.host.dataset.eraBuildings='6';this.host.dataset.pedestrianHeight='3.15';this.host.dataset.pavingDetail='stone-grain-cracks-moss-repairs';
   }
   private ground(w:PaperWorkshop){
     const g=this.scenery;
@@ -199,7 +236,7 @@ export class MorningStreet implements SceneExtension{
       const outline=new T.LineSegments(outlineGeo,w.ownMaterial(new T.LineBasicMaterial({color:'#f9ddb0',transparent:true,opacity:.8,depthTest:false})));outline.position.y=plot.height/2;outline.renderOrder=21;boundary.add(outline);
     }
     // Power wires, wash lines and street lamps connect the separate buildings into a neighborhood.
-    for(const z of [14,-.5,-15,-29]){
+    for(const z of [14,-.5,-11.5,-29]){
       const poleX=z===14?5.5:-5.55;
       w.cylinder(this.scenery,.10,10.1,[poleX,5,z],'#727668',10);w.box(this.scenery,[1.6,.11,.11],[poleX,9.55,z],'#565b50','wood');
       for(const off of [-.55,.55]){w.cylinder(this.scenery,.085,.14,[poleX+off,9.69,z],'#b7c0aa',10,'ceramic');}
@@ -207,7 +244,7 @@ export class MorningStreet implements SceneExtension{
       const shade=w.mesh(this.scenery,new T.ConeGeometry(.32,.15,14,1,true),w.material('#456359','metal'),[poleX*.78,7.72,z]);(shade.material as T.Material).side=T.DoubleSide;
       w.mesh(this.scenery,new T.SphereGeometry(.075,8,6),w.ownMaterial(new T.MeshStandardMaterial({color:'#ffdfa0',emissive:'#ffb958',emissiveIntensity:1.4})),[poleX*.78,7.64,z]);
     }
-    for(let j=0;j<3;j++)w.line(this.scenery,[V(5.0+j*.32,9.6,14),V(-.5,8.15,7),V(-5.9+j*.33,9.5,-.5),V(-5.85+j*.33,8.5,-8),V(-5.9+j*.33,9.5,-15),V(-5.9+j*.33,8.5,-23),V(-5.9+j*.33,9.5,-29)],'#4c554d',.009);
+    for(let j=0;j<3;j++)w.line(this.scenery,[V(5.0+j*.32,9.6,14),V(-.5,8.15,7),V(-5.9+j*.33,9.5,-.5),V(-5.85+j*.33,8.5,-6),V(-5.9+j*.33,9.5,-11.5),V(-5.9+j*.33,8.5,-20.25),V(-5.9+j*.33,9.5,-29)],'#4c554d',.009);
     w.line(this.scenery,[V(-8.8,7,-6),V(-.2,6,-7),V(8.8,7,-8)],'#625b47',.013);
     for(let i=0;i<5;i++){
       const cloth=new T.Group();cloth.position.set(-3.5+i*1.7,6.2+Math.abs(i-2)*.18,-6.7);this.scenery.add(cloth);this.laundry.push(cloth);
@@ -216,11 +253,11 @@ export class MorningStreet implements SceneExtension{
       for(const xx of [-.28,.28])w.box(cloth,[.035,.12,.055],[xx,0,.025],'#896c42','wood');
     }
     w.sign(this.scenery,'巷 口 早 市',2.8,.68,[-4.2,3.6,17.2],'#31534f','#e9d9b5','清 晨 过 早　·　慢 慢 逛');
-    w.box(this.scenery,[.12,3.9,.13],[-5.35,1.93,17.16],'#746046','wood');w.box(this.scenery,[.12,3.9,.13],[-3.05,1.93,17.16],'#746046','wood');
+    for(const x of [-5.35,-3.05])this.blockWalkProp(w.box(this.scenery,[.12,3.9,.13],[x,1.93,17.16],'#746046','wood'),'street-entry-post-'+x);
   }
-  private streetLife(w:PaperWorkshop,portraits:HTMLImageElement[]){
+  private streetLife(w:PaperWorkshop,portraits:HTMLImageElement[][]){
     const g=this.scenery;marketCart(w,g,-6.3,13);umbrella(w,g,-6.3,12.5,'#a96848');
-    bench(w,g,-6.0,-27.5,.25);bench(w,g,3.2,-29,-.3);
+    this.blockWalkProp(bench(w,g,-6.0,-27.5,.25),'west-bench');this.blockWalkProp(bench(w,g,3.2,-29,-.3),'east-bench');
     umbrella(w,g,6.2,-25.2,'#6e8272');
     for(const [x,z] of [[-5.8,10.1],[6.1,8],[-5.7,-1],[5.8,-4.4],[-5.8,-22],[5.9,-27.3]]){
       const plant=new T.Group();plant.position.set(x,.15,z);g.add(plant);
@@ -229,42 +266,76 @@ export class MorningStreet implements SceneExtension{
     }
     const routes=[
       {image:0,a:[-2.8,0,13],b:[-2.8,0,-24],phase:.08,speed:.33,moving:true},
-      {image:1,a:[2.5,0,-25],b:[2.5,0,16],phase:.31,speed:.27,moving:true},
-      {image:0,a:[-.6,0,-9],b:[-.6,0,-31],phase:.5,speed:.23,moving:true},
-      {image:1,a:[3.6,0,-29],b:[3.6,0,-13],phase:.6,speed:.20,moving:true},
-      {image:2,a:[3.4,0,10.8],b:[3.4,0,10.8],phase:.1,speed:0,moving:false},
-      {image:3,a:[4.1,0,12.1],b:[4.1,0,12.1],phase:.6,speed:0,moving:false},
-      {image:1,a:[-7.9,0,12.8],b:[-7.9,0,12.8],phase:0,speed:0,moving:false},
-      {image:3,a:[1.8,0,-24],b:[1.8,0,-24],phase:1.2,speed:0,moving:false},
-      {image:2,a:[-3.3,0,-17],b:[-3.3,0,-17],phase:1.8,speed:0,moving:false},
-      {image:0,a:[3.3,0,18],b:[3.3,0,-21],phase:.39,speed:.24,moving:true},
-      {image:1,a:[-3.2,0,-29],b:[-3.2,0,15],phase:.17,speed:.31,moving:true},
+      {image:2,a:[2.5,0,-25],b:[2.5,0,16],phase:.31,speed:.27,moving:true},
+      {image:3,a:[-.6,0,-9],b:[-.6,0,-31],phase:.5,speed:.23,moving:true},
+      {image:4,a:[3.6,0,-29],b:[3.6,0,-13],phase:.6,speed:.20,moving:true},
+      {image:5,a:[3.4,0,10.8],b:[3.4,0,10.8],phase:.1,speed:0,moving:false},
+      {image:6,a:[4.1,0,12.1],b:[4.1,0,12.1],phase:.6,speed:0,moving:false},
+      {image:7,a:[-7.9,0,12.8],b:[-7.9,0,12.8],phase:0,speed:0,moving:false},
+      {image:1,a:[1.8,0,-24],b:[1.8,0,-24],phase:1.2,speed:0,moving:false},
+      {image:6,a:[-3.3,0,-17],b:[-3.3,0,-17],phase:1.8,speed:0,moving:false},
+      {image:4,a:[3.3,0,18],b:[3.3,0,-21],phase:.39,speed:.24,moving:true},
+      {image:5,a:[-3.2,0,-29],b:[-3.2,0,15],phase:.17,speed:.31,moving:true},
       {image:2,a:[1.7,0,17],b:[1.7,0,-19],phase:.57,speed:.23,moving:true},
-      {image:3,a:[-1.8,0,-31],b:[-1.8,0,16],phase:.74,speed:.28,moving:true},
-      {image:1,a:[3.1,0,-10],b:[3.1,0,19],phase:.69,speed:.26,moving:true},
-      {image:0,a:[5.6,0,2.5],b:[5.6,0,2.5],phase:.4,speed:0,moving:false},
-      {image:3,a:[-5.5,0,-4.2],b:[-5.5,0,-4.2],phase:.2,speed:0,moving:false},
-      {image:2,a:[4.6,0,-23],b:[4.6,0,-23],phase:.6,speed:0,moving:false},
-      {image:1,a:[1.1,0,-28],b:[1.1,0,-28],phase:.8,speed:0,moving:false},
+      {image:0,a:[-1.8,0,-31],b:[-1.8,0,16],phase:.74,speed:.28,moving:true},
+      {image:3,a:[3.1,0,-10],b:[3.1,0,19],phase:.69,speed:.26,moving:true},
+      // Standing customers stay on the pavement, with room for both era silhouettes.
+      {image:1,a:[4.1,0,6.8],b:[4.1,0,6.8],phase:.4,speed:0,moving:false},
+      {image:2,a:[-4.1,0,-4.2],b:[-4.1,0,-4.2],phase:.2,speed:0,moving:false},
+      {image:7,a:[4.1,0,-23],b:[4.1,0,-23],phase:.6,speed:0,moving:false},
+      {image:4,a:[1.1,0,-28],b:[1.1,0,-28],phase:.8,speed:0,moving:false},
     ];
     for(const route of routes){
       const person=new T.Group();person.name='pedestrian-'+this.people.length;person.userData.animationRoot=true;g.add(person);
-      const height=3.15*(1+(this.people.length%4-1.5)*.027),prints:T.Mesh[]=[];
+      const profile=pedestrianProfiles[route.image];
+      const height=profile.height*(1+(this.people.length%4-1.5)*.027),prints:T.Mesh[]=[];
+      person.userData.pedestrianStyle=profile.id;person.userData.height=height;
       for(let era=0;era<2;era++){
-        const image=portraits[(this.people.length%2)+(era?2:0)];
-        const paper=w.print(person,image,height*2/3,height,[0,0,0],true);paper.geometry.computeBoundingBox();
+        const image=portraits[route.image][era];
+        const paper=w.print(person,image,height*image.width/image.height,height,[0,0,0],true);paper.geometry.computeBoundingBox();
         const box=paper.geometry.boundingBox!,scale=height/(box.max.y-box.min.y);paper.scale.setScalar(scale);paper.position.y=.06-box.min.y*scale;
         paper.name='pedestrian-'+(era?'present':'past');prints.push(paper);
       }
-      this.people.push({group:person,print:prints[0],prints,start:new T.Vector3(...route.a),end:new T.Vector3(...route.b),phase:route.phase,speed:route.speed,moving:route.moving});
+      const start=new T.Vector3(...route.a),end=new T.Vector3(...route.b);
+      // Both era silhouettes must fit even while the paper turns to face the viewer.
+      const radius=Math.max(...prints.map(p=>Math.max(Math.abs(p.geometry.boundingBox!.min.x*p.scale.x),Math.abs(p.geometry.boundingBox!.max.x*p.scale.x))));
+      person.position.lerpVectors(start,end,route.moving?route.phase:0);
+      // Reserve distinct initial standing spaces, including people who arrive later.
+      // This keeps the two neighbors at the entrance and intersecting walking lanes from starting overlapped.
+      const occupied=this.people.map(p=>({id:p.group.name,x:p.group.position.x,z:p.group.position.z,radius:p.radius+.08}));
+      const initial=person.position.clone();let phase=route.phase;
+      for(const offset of [0,.8,-.8,1.6,-1.6,2.4,-2.4,3.2,-3.2,4,-4,4.8,-4.8]){
+        const candidate=initial.clone();candidate.z=T.MathUtils.clamp(initial.z+offset,-31,18);
+        if(bodySegmentClear(candidate,candidate,occupied,radius)){
+          person.position.copy(candidate);
+          if(route.moving)phase=(candidate.z-start.z)/(end.z-start.z);
+          else{start.copy(candidate);end.copy(candidate);}
+          break;
+        }
+      }
+      // The edge material is shared by printed scenery, so give fading people their own copies.
+      const materials:T.Material[]=[];
+      for(const print of prints){const source=Array.isArray(print.material)?print.material:[print.material];print.material=source.map(m=>{const copy=w.ownMaterial(m.clone());copy.transparent=true;materials.push(copy);return copy;});}
+      const presence=this.free?pedestrianPresence(this.people.length,0):1;person.visible=presence>0;materials.forEach(m=>m.opacity=presence);
+      this.people.push({group:person,print:prints[0],prints,materials,presence,start,end,phase,speed:route.speed,moving:route.moving,radius,time:0});
     }
   }
   private atmosphere(w:PaperWorkshop,image:HTMLImageElement){
     const texture=w.ownTexture(new T.Texture(image));texture.needsUpdate=true;texture.wrapS=T.RepeatWrapping;
     const skyMat=w.ownMaterial(new T.MeshBasicMaterial({map:texture,side:T.BackSide,fog:false,depthWrite:false}));
+    // Fade the panorama's varying top edge to one clear-sky color before the cap.
+    // This keeps the horizon while avoiding a circular seam or radial texture streaks overhead.
+    skyMat.onBeforeCompile=shader=>{
+      shader.vertexShader='varying float skyHeight;\n'+shader.vertexShader;
+      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nskyHeight=position.y;');
+      shader.fragmentShader='varying float skyHeight;\n'+shader.fragmentShader;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+        diffuseColor.rgb=mix(diffuseColor.rgb,diffuse*texture2D(map,vec2(.5,1.)).rgb,smoothstep(-25.,20.,skyHeight));`);
+    };
+    skyMat.customProgramCacheKey=()=> 'closed-morning-sky-v1';
     // Keep the illustrated horizon at its original height. Extend only the clear
-    // upper sky so a pedestrian's wider lens never sees the edge of the backdrop.
-    const skyGeometry=new T.CylinderGeometry(82,82,210,96,8,true);
+    // upper sky, with both caps closed so looking straight up never exposes the page.
+    const skyGeometry=new T.CylinderGeometry(82,82,210,96,8,false);
     const skyPositions=skyGeometry.getAttribute('position'),skyUV=skyGeometry.getAttribute('uv');
     for(let i=0;i<skyUV.count;i++)skyUV.setY(i,T.MathUtils.clamp((skyPositions.getY(i)+75)/50,0,1));
     this.sky=w.mesh(this.scenery,skyGeometry,skyMat,[0,75,-8]);this.sky.rotation.y=Math.PI;this.sky.castShadow=false;this.sky.receiveShadow=false;this.sky.userData.noAO=true;this.sky.renderOrder=-100;
@@ -285,7 +356,7 @@ export class MorningStreet implements SceneExtension{
     if(animate){this.dawnTween=gsap.to(this,{dawn:end,duration:3,ease:'sine.inOut',onUpdate:()=>this.applyDawn(),onComplete:()=>{this.dawnTween=null;}});}
     else{this.dawnTween=null;this.dawn=end;this.applyDawn();}
   }
-  private applyDawn(){if(!this.sun)return;const y=14+this.dawn*13;this.sun.position.set(12,y,-58);this.sun.intensity=2.75+this.dawn*.9;this.sun.color.copy(new T.Color('#ffc17e').lerp(new T.Color('#ffe9c2'),this.dawn));this.sunDisc?.position.set(12,y,-58);this.sunGlow?.position.set(12,y,-57.8);this.scene.fog!.color.copy(new T.Color('#d5dfce').lerp(new T.Color('#e5e8ce'),this.dawn));this.host.dataset.dawn=this.dawn.toFixed(2);this.host.dataset.sunHeight=y.toFixed(2);}
+  private applyDawn(){if(!this.sun)return;if(this.morning){this.morning.update(this.dawn,this.eraProgress);return;}const y=14+this.dawn*13;this.sun.position.set(12,y,-58);this.sun.intensity=2.75+this.dawn*.9;this.sun.color.copy(new T.Color('#ffc17e').lerp(new T.Color('#ffe9c2'),this.dawn));this.sunDisc?.position.set(12,y,-58);this.sunGlow?.position.set(12,y,-57.8);this.scene.fog!.color.copy(new T.Color('#d5dfce').lerp(new T.Color('#e5e8ce'),this.dawn));this.host.dataset.dawn=this.dawn.toFixed(2);this.host.dataset.sunHeight=y.toFixed(2);}
   view(detail:Detail,aspect:number,orbit:number){
     this.activeDetail=detail;
     if(this.free)return this.free.view(aspect);
@@ -308,7 +379,10 @@ export class MorningStreet implements SceneExtension{
     return {position,target};
   }
   update(time:number,camera:T.PerspectiveCamera,turn:number,motion=true){
+    this.eraProgress=turn;this.morning?.update(this.dawn,turn);
+    if(this.morning){this.host.dataset.morningProgress=this.dawn.toFixed(4);this.host.dataset.marketClock=morningTime(this.dawn);this.host.dataset.openShops=String(openShopCount(this.dawn));this.host.dataset.dawn=this.dawn.toFixed(3);this.host.dataset.sunHeight=this.sun.position.y.toFixed(2);}
     this.foodStalls?.update(time,camera,turn);this.eras?.update(turn);this.paving?.update(turn);
+    if(this.morning)this.eras?.updateMorning(this.dawn);
     this.host.dataset.wholeStreetEra=turn>=.5?'present':'past';this.host.dataset.pedestrianEra=turn>=.5?'present':'past';
     this.shops.forEach(shop=>{shop.setEraProgress(turn);shop.update(time,camera,motion);});
     const bounds=this.host.getBoundingClientRect();
@@ -321,7 +395,9 @@ export class MorningStreet implements SceneExtension{
       button.hidden=!active||distance>35||point.z<0||point.z>1||Math.abs(point.x)>.92||Math.abs(point.y)>.76;
       let x=(point.x*.5+.5)*bounds.width,y=(-point.y*.5+.5)*bounds.height;
       if(!button.hidden){
-        for(const other of occupied)if(Math.abs(x-other.x)<112&&Math.abs(y-other.y)<48)y=other.y+51;
+        // The visible dot is small; reserve the full 44px touch target around it.
+        let overlap:typeof occupied[number]|undefined;
+        while((overlap=occupied.find(other=>Math.abs(x-other.x)<44&&Math.abs(y-other.y)<44)))y=overlap.y+48;
         if(y>bounds.height-135)button.hidden=true;else occupied.push({x,y});
       }
       button.style.transform='translate('+x+'px,'+y+'px) translate(-50%,-50%)';
@@ -335,18 +411,39 @@ export class MorningStreet implements SceneExtension{
     this.trees.forEach((g,i)=>g.rotation.z=Math.sin(time*.32+i)*.0035);
     this.birds.forEach((g,i)=>{g.position.set(Math.sin(time*.065+i*1.2)*12,13.3+i*.7+Math.sin(time*.3+i)*.15,-14+Math.cos(time*.065+i*1.2)*7);g.rotation.y=-time*.065-i*1.2;g.children.filter(c=>c.userData.side).forEach(c=>c.rotation.y=Math.sin(time*3.4+i)*.55*c.userData.side);});
     this.branches.forEach((b,i)=>b.rotation.z=Math.sin(time*.4+i)*.025);this.laundry.forEach((b,i)=>b.rotation.x=Math.sin(time*.55+i)*.045);
+    const pedestrianDt=Math.max(0,time-this.pedestrianTime);this.pedestrianTime=time;
     this.people.forEach((p,i)=>{
-      const length=p.start.distanceTo(p.end),phase=p.moving?(p.phase+time*p.speed/Math.max(length,1))%2:0;
-      // Continuous ping-pong routes never teleport through a visible frame or enter a shop plot.
-      const progress=phase<=1?phase:2-phase;p.group.position.lerpVectors(p.start,p.end,progress);p.group.position.y=p.moving?Math.abs(Math.sin(time*2.25+i))*.018:0;
+      let desired=this.morning?pedestrianPresence(i,this.dawn):1;
+      const viewer=this.free?.position;
+      const nearby=this.people.filter(other=>other!==p&&other.group.visible).map(other=>({id:other.group.name,x:other.group.position.x,z:other.group.position.z,radius:other.radius+.04}));
+      const bike=this.bicyclePass?.obstacle;if(bike)nearby.push(bike);
+      if(viewer)nearby.push({id:'viewer',x:viewer.x,z:viewer.z,radius:.40});
+      // A new arrival waits if the viewer occupies its space. Time scrubbing cannot spawn a body through the camera.
+      if(!p.group.visible&&!bodySegmentClear(p.group.position,p.group.position,nearby,p.radius))desired=0;
+      p.presence=T.MathUtils.damp(p.presence,desired,3.5,this.frameDt);
+      p.group.visible=p.presence>.002;p.materials.forEach(m=>m.opacity=p.presence);
+      if(!p.group.visible)return;
+      const nextTime=this.free?p.time+pedestrianDt:time,length=p.start.distanceTo(p.end),phase=p.moving?(p.phase+nextTime*p.speed/Math.max(length,1))%2:0;
+      const progress=phase<=1?phase:2-phase,next=p.start.clone().lerp(p.end,progress);
+      // A passer-by yields to the viewer; resuming advances its own clock, never jumps ahead.
+      if(!p.moving||bodySegmentClear(p.group.position,next,nearby,p.radius)){p.time=nextTime;p.group.position.copy(next);}
+      p.group.position.y=p.moving?Math.abs(Math.sin(p.time*2.25+i))*.018:0;
       p.group.rotation.y=Math.atan2(camera.position.x-p.group.position.x,camera.position.z-p.group.position.z)*.78;
       p.prints.forEach((print,era)=>{print.visible=turn<.5?era===0:era===1;print.rotation.z=Math.sin(time*(p.moving?2.25:.55)+i)*(p.moving?.012:.004);print.rotation.y=turn<.5?turn*Math.PI:(turn-1)*Math.PI;});
     });
+    this.host.dataset.activePeople=String(this.people.filter(p=>p.group.visible).length);
+    if(this.bicyclePass){
+      const obstacles=this.navigationObstacles().filter(o=>o.id!=='passing-old-bicycle');if(this.free)obstacles.push({id:'viewer',x:this.free.position.x,z:this.free.position.z,radius:.40});
+      this.bicyclePass.update(this.frameDt,this.dawn,turn,motion,this.experienceActive,camera,obstacles);
+      this.host.dataset.bicycleVisible=String(this.bicyclePass.root.visible);this.host.dataset.bicycleMoving=String(this.bicyclePass.cue?.moving??false);this.host.dataset.bicycleTime=(this.bicyclePass.cue?.elapsed??0).toFixed(3);
+    }
+    const right=camera.matrixWorld.elements;
+    this.soundscape?.update({progress:this.dawn,era:turn,camera:{position:camera.position,right:{x:right[0],y:right[1],z:right[2]}},bicycle:this.bicyclePass?.cue??null});
     if(this.dust)(this.dust.material as T.ShaderMaterial).uniforms.time.value=time;
     if(this.marker){const point=V(-5.6,3.0,5.6).project(camera);const b=this.host.getBoundingClientRect();this.marker.style.transform=`translate(${(point.x*.5+.5)*b.width}px,${(-point.y*.5+.5)*b.height}px) translate(-50%,-50%)`;this.marker.hidden=!!this.moment||this.shopOverview||this.activeDetail!=='welcome'||this.viewId==='plan'||point.z<0||point.z>1||Math.abs(point.x)>.94||Math.abs(point.y)>.82;}
     this.host.dataset.pedestrianZ=this.people[0]?.group.position.z.toFixed(3)??'';this.host.dataset.streetTime=time.toFixed(2);
   }
-  dispose(){this.disposed=true;this.free?.dispose();this.walk?.dispose();this.dawnTween?.kill();this.shops.forEach(shop=>shop.dispose());this.shops.clear();this.scene.remove(this.scenery,this.planning);this.marker=null;}
+  dispose(){this.disposed=true;this.free?.dispose();this.walk?.dispose();this.dawnTween?.kill();this.morning?.dispose();this.bicyclePass?.dispose();this.soundscape?.dispose();this.shops.forEach(shop=>shop.dispose());this.shops.clear();this.scene.remove(this.scenery,this.planning);this.marker=null;}
 }
 
 

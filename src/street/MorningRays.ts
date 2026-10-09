@@ -13,5 +13,5 @@ export class MorningRays{
    const mesh=w.mesh(parent,geo,mat);mesh.castShadow=false;mesh.receiveShadow=false;mesh.userData.noAO=true;mesh.renderOrder=1;this.materials.push(mat);
   }
  }
- update(time:number,dawn:number){this.materials.forEach(m=>{m.uniforms.time.value=time;m.uniforms.strength.value=.09-dawn*.035;});}
+ update(time:number,dawn:number){this.materials.forEach(m=>{m.uniforms.time.value=time;m.uniforms.strength.value=T.MathUtils.smoothstep(dawn,.12,.5)*(.09-dawn*.035);});}
 }

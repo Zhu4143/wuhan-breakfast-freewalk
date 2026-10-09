@@ -59,7 +59,7 @@ export class AtelierScene {
     const w=this.workshop,g=this.root;
     const illustrated=w.illustrated,base=import.meta.env.BASE_URL+'assets/'+(illustrated?'storybook/':'atelier/');
     const [interior,keeper,successor,bowl,today]=await Promise.all(['interior',illustrated?'keeper-atlas':'keeper',illustrated?'successor-atlas':'successor','bowl','interior-present'].map(n=>w.image(base+n+'.webp')));
-    const timber=await w.image(import.meta.env.BASE_URL+'assets/atelier/timber-grain.webp');
+    const timber=illustrated?null:await w.image(import.meta.env.BASE_URL+'assets/atelier/timber-grain.webp');
     const [keeperSpeak,keeperBlink,successorSpeak,successorBlink,...extra]=illustrated?[]:await Promise.all(['keeper-speak','keeper-blink','successor-speak','successor-blink','keeper-closed','keeper-ee','keeper-oh','successor-closed','successor-ee','successor-oh'].map(n=>w.image(base+n+'.webp')));
     if(this.disposed)return;
     w.timber=timber;

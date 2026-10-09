@@ -1,0 +1,210 @@
+{
+  "generator": "built-in image_gen",
+  "processing": "alpha-gap split, alpha-bounds crop, height 896, WebP quality 88",
+  "assets": [
+    {
+      "id": "grandmother",
+      "era": "past",
+      "source": "art\\pedestrians-v13\\grandmother-source.png",
+      "sourceSha256": "add32dab3c0fde5d2be2a8fed749804cb71e6685d73ed3b56e06bd6e1fb3c831",
+      "split": 567,
+      "crop": {
+        "left": 0,
+        "top": 145,
+        "width": 567,
+        "height": 1278
+      },
+      "file": "pedestrian-grandmother-past-v13.webp",
+      "width": 398,
+      "height": 896,
+      "bytes": 89448
+    },
+    {
+      "id": "grandmother",
+      "era": "present",
+      "source": "art\\pedestrians-v13\\grandmother-source.png",
+      "sourceSha256": "add32dab3c0fde5d2be2a8fed749804cb71e6685d73ed3b56e06bd6e1fb3c831",
+      "split": 567,
+      "crop": {
+        "left": 567,
+        "top": 140,
+        "width": 457,
+        "height": 1285
+      },
+      "file": "pedestrian-grandmother-present-v13.webp",
+      "width": 319,
+      "height": 896,
+      "bytes": 77800
+    },
+    {
+      "id": "worker",
+      "era": "past",
+      "source": "art\\pedestrians-v13\\worker-source.png",
+      "sourceSha256": "b292b078b86990764b53f88730c35747fcc2003cf37447918256958d6009e186",
+      "split": 525,
+      "crop": {
+        "left": 17,
+        "top": 98,
+        "width": 508,
+        "height": 1346
+      },
+      "file": "pedestrian-worker-past-v13.webp",
+      "width": 338,
+      "height": 896,
+      "bytes": 69450
+    },
+    {
+      "id": "worker",
+      "era": "present",
+      "source": "art\\pedestrians-v13\\worker-source.png",
+      "sourceSha256": "b292b078b86990764b53f88730c35747fcc2003cf37447918256958d6009e186",
+      "split": 525,
+      "crop": {
+        "left": 525,
+        "top": 98,
+        "width": 489,
+        "height": 1345
+      },
+      "file": "pedestrian-worker-present-v13.webp",
+      "width": 326,
+      "height": 896,
+      "bytes": 69514
+    },
+    {
+      "id": "schoolgirl",
+      "era": "past",
+      "source": "art\\pedestrians-v13\\schoolgirl-source.png",
+      "sourceSha256": "3014f40488941fd6194d01762c4daba416c0a646e00f08efcfc21f7ddeb6da6c",
+      "split": 520,
+      "crop": {
+        "left": 58,
+        "top": 81,
+        "width": 430,
+        "height": 1388
+      },
+      "file": "pedestrian-schoolgirl-past-v13.webp",
+      "width": 278,
+      "height": 896,
+      "bytes": 59592
+    },
+    {
+      "id": "schoolgirl",
+      "era": "present",
+      "source": "art\\pedestrians-v13\\schoolgirl-source.png",
+      "sourceSha256": "3014f40488941fd6194d01762c4daba416c0a646e00f08efcfc21f7ddeb6da6c",
+      "split": 520,
+      "crop": {
+        "left": 553,
+        "top": 58,
+        "width": 455,
+        "height": 1418
+      },
+      "file": "pedestrian-schoolgirl-present-v13.webp",
+      "width": 288,
+      "height": 896,
+      "bytes": 77818
+    },
+    {
+      "id": "commuter",
+      "era": "past",
+      "source": "art\\pedestrians-v13\\commuter-source.png",
+      "sourceSha256": "ac6d334e81deb29bc6f9342b1a132f4db23bad7b469b3410e14f50a6f6e71ebd",
+      "split": 518,
+      "crop": {
+        "left": 34,
+        "top": 36,
+        "width": 476,
+        "height": 1449
+      },
+      "file": "pedestrian-commuter-past-v13.webp",
+      "width": 294,
+      "height": 896,
+      "bytes": 58356
+    },
+    {
+      "id": "commuter",
+      "era": "present",
+      "source": "art\\pedestrians-v13\\commuter-source.png",
+      "sourceSha256": "ac6d334e81deb29bc6f9342b1a132f4db23bad7b469b3410e14f50a6f6e71ebd",
+      "split": 518,
+      "crop": {
+        "left": 527,
+        "top": 38,
+        "width": 480,
+        "height": 1441
+      },
+      "file": "pedestrian-commuter-present-v13.webp",
+      "width": 298,
+      "height": 896,
+      "bytes": 65246
+    },
+    {
+      "id": "neighbor",
+      "era": "past",
+      "source": "art\\pedestrians-v13\\neighbor-source.png",
+      "sourceSha256": "dd92154465a7013bb9b6ae84d6eba16be3797cc4db04c92244d5426c39953544",
+      "split": 534,
+      "crop": {
+        "left": 34,
+        "top": 57,
+        "width": 484,
+        "height": 1419
+      },
+      "file": "pedestrian-neighbor-past-v13.webp",
+      "width": 306,
+      "height": 896,
+      "bytes": 70640
+    },
+    {
+      "id": "neighbor",
+      "era": "present",
+      "source": "art\\pedestrians-v13\\neighbor-source.png",
+      "sourceSha256": "dd92154465a7013bb9b6ae84d6eba16be3797cc4db04c92244d5426c39953544",
+      "split": 534,
+      "crop": {
+        "left": 551,
+        "top": 60,
+        "width": 448,
+        "height": 1426
+      },
+      "file": "pedestrian-neighbor-present-v13.webp",
+      "width": 281,
+      "height": 896,
+      "bytes": 59124
+    },
+    {
+      "id": "elder",
+      "era": "past",
+      "source": "art\\pedestrians-v13\\elder-source.png",
+      "sourceSha256": "c6c3992c7c4c1a1224241b279d524d4c0f3a803e5907510a0210380244fdf4ad",
+      "split": 713,
+      "crop": {
+        "left": 210,
+        "top": 26,
+        "width": 422,
+        "height": 1091
+      },
+      "file": "pedestrian-elder-past-v13.webp",
+      "width": 347,
+      "height": 896,
+      "bytes": 85368
+    },
+    {
+      "id": "elder",
+      "era": "present",
+      "source": "art\\pedestrians-v13\\elder-source.png",
+      "sourceSha256": "c6c3992c7c4c1a1224241b279d524d4c0f3a803e5907510a0210380244fdf4ad",
+      "split": 713,
+      "crop": {
+        "left": 794,
+        "top": 32,
+        "width": 426,
+        "height": 1086
+      },
+      "file": "pedestrian-elder-present-v13.webp",
+      "width": 351,
+      "height": 896,
+      "bytes": 82044
+    }
+  ]
+}

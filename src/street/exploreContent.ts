@@ -1,4 +1,5 @@
 import {tourStops,type TourPage,type TourStop,type FoodNote} from './tourContent.ts';
+import {breakfastShops} from './breakfastShops.ts';
 export type PlaceId='noodle'|'doupi'|'mianwo'|'market'|'neighbors'|'courtyard'|'east-middle'|'west-end'|'east-end';
 export type Place={id:PlaceId;name:string;short:string;kind:string;food?:FoodNote;anchor:[number,number,number];stop:TourStop;stopIndex:number;chapters:{title:string;pages:TourPage[];stop?:number;view?:TourStop;compare?:boolean}[]};
 const doupi:TourStop={id:'doupi',name:'豆皮铺',position:[2.65,2.45,3.2],look:[6.4,2.1,2.1],dawn:.38,pages:[
@@ -16,11 +17,30 @@ const mianwo:TourStop={id:'mianwo',name:'面窝摊',position:[-2.65,2.45,-5.4],l
  {label:'文化小札 · 面窝',title:'厚边薄心，藏着一把勺。',text:'湖北文旅的介绍提到，米浆与黄豆浆倒入专用铁勺，形成厚边、薄心的面窝。不同部位带来不同口感，一道小吃的形状，也留下了器具的痕迹。',kind:'fact',sources:['T3']},
  {label:'历史与传说',title:'从看得见的手艺开始。',text:'关于面窝的起源，有流传的故事；湖北文旅的资料同时提醒，它们没有具体文字记载。本作不替传说下定论，就从眼前的米浆、铁勺和做法认识这一味。',kind:'fact',sources:['T3']},
 ]};
-const neighborhoodPlaces:Place[]=(['east-middle','west-end','east-end'] as const).map((id,i)=>{
- const x=i===1?-3.2:3.2,z=[-8,-17,-19][i],name=['街坊书屋','巷里人家','邻里小院'][i];
- const pages:TourPage[]=[{label:'沿街今昔 · 场景观察',title:['木门后，也有新的清晨。','窗子修过，街坊还在。','走到街尾，生活接着往前。'][i],text:'站在这栋楼前切换昔日与今日：旧木门、竹帘和斑驳的墙脚，换成维护后的门窗、浅色砖面与新的生活物件；楼上的窗框和门牌也会改变。这里是一处虚构的街坊空间，保留老街的尺度，呈现维护与日常生活的延续。',kind:'observation'}];
- const stop:TourStop={id,name,position:[x,2.45,z],look:[x<0?-7.6:7.6,3.2,z],dawn:.4,pages};
- return {id,name,short:name,kind:'旧窗新事，沿街看看',anchor:[x<0?-5.35:5.35,3.55,z],stop,stopIndex:10+i,chapters:[{title:'街坊今昔',pages,compare:true}]};
+const addedPlaces:Place[]=breakfastShops.map((shop,i)=>{
+ const {id,name}=shop,x=i===1?-3.2:3.2,z=[-8,-17,-19][i];
+ const facts=[
+  {title:'一碗鲜味，把鱼和米粉连起来。',text:'武汉市政府的食单列有米粉、鲫鱼、胡椒、生姜、小葱等材料。商务局转载的报道介绍，鱼熬成汤底，再调成糊汤，配米粉和油条。各家做法有差异，眼前的锅台是创作演绎。',sources:['T4','T7']},
+  {title:'褶口之下，是软糯的米香。',text:'武汉的重油烧麦以糯米和配料形成饱满的馅，公开食单列有糯米、猪肉、香菇。武汉商务的介绍也提到重油与胡椒的风味。烧梅、烧麦的写法会在食单里遇见；这里用“烧梅”给虚构小铺命名。',sources:['T4','T8']},
+  {title:'小小一笼，藏着鲜肉与汤汁。',text:'武汉的公开食单将鲜肉汤包列为名点，介绍薄皮与鲜汤的特点，列有面粉、猪肉、生姜、醋等材料。眼前的小笼与姜醋碟是依据这些元素创作的器物；这间巷尾汤包馆不是现实中的老字号。',sources:['T4','T8']},
+ ][i];
+ const pages:TourPage[]=[{label:'文化小札 · '+shop.food,kind:'fact',...facts},{label:shop.keeper+' · 虚构店主',title:shop.greeting,text:[
+  '何叔把汤勺搭在锅沿，指了指旁边的油条：“喜欢脆的就掰一点，喜欢软的就多蘸一会儿。”胡椒罐、蓝边碗和灶边的抹布，都留着一个清晨正在忙碌的样子。',
+  '桂姨揭开竹笼，热气绕过笼沿。“先别急，我把这一笼端稳。”案板上的擀面杖与一小堆面皮，让你看见蒸笼之外的那段准备。',
+  '陈伯把小笼往台前挪了一点，顺手放好醋碟：“坐一会儿，汤还热。”碗碟各有位置，姜丝放在旁边，下一笼也已经准备好。',
+ ][i],kind:'story'}];
+ // Stand beside the street lamp, so its pole cannot bisect the counter and keeper.
+ const stop:TourStop={id,name,position:[x,2.45,z+.95],look:[x<0?-6.55:6.55,2.55,z+.30],dawn:.4,pages};
+ const objectText=[
+  '看锅沿的长柄汤勺、汤面里的细粉和旁边两股相连的油条。汤锅有弧形锅壁与侧把，蓝边碗留在台前；这些都是独立的立体器物，近看时会彼此遮挡。',
+  '竹笼里，烧梅的开口露出糯米与小块配料；每只烧梅的薄皮围成褶口。笼旁摆着擀面杖、面皮和备料罐，柜台后的包制台仍在同一位置。',
+  '汤包用收拢的褶口封住馅，与隔壁开口的烧梅不同。留意小笼的竹圈、台前的蘸料碟与姜丝，以及准备下一笼的案板。',
+ ][i];
+ return {id,name,short:shop.food,kind:['鲜汤裹粉，胡椒暖香','糯米软香，掀笼见热气','薄皮鲜肉，一口鲜汤'][i],food:id,anchor:[x<0?-5.35:5.35,3.55,z],stop,stopIndex:10+i,chapters:[
+  {title:'这一味',pages},
+  {title:shop.object,pages:[{label:'器物近看 · 场景观察',title:shop.object+'，也有手的记忆。',text:objectText,kind:'observation'}]},
+  {title:'看今昔',compare:true,pages:[{label:'今昔对照 · 虚构情境',title:'门还是这一扇，清晨接着开。',text:`昔日是${shop.keeper}在柜台后，今日换成${shop.todayKeeper}。翻过纸墙，旧木台面换成易擦洗的台面，灶具、收纳、餐盒与招牌一起更新；${shop.object}仍留在熟悉的位置。人物、店名和开门时刻都是本作的艺术创作。`,kind:'observation'}]},
+ ]};
 });
 export const places:Place[]=[
  {id:'noodle',name:'林记热干面',short:'热干面',kind:'芝麻香，趁热拌',food:'noodle',anchor:[-5.35,4.1,5],stop:tourStops[2],stopIndex:2,chapters:[{title:'这一碗',pages:tourStops[2].pages,stop:2},{title:'手艺与来历',pages:tourStops[3].pages,stop:3},{title:'看今昔',pages:tourStops[4].pages,stop:4}]},
@@ -29,6 +49,6 @@ export const places:Place[]=[
  {id:'market',name:'巷口菜摊',short:'过早小札',kind:'听听武汉的早餐故事',anchor:[-5.8,3.4,13],stop:tourStops[1],stopIndex:1,chapters:[{title:'武汉过早',pages:tourStops[1].pages}]},
  {id:'neighbors',name:'街坊留言',short:'街坊日常',kind:'一声招呼，一张纸条',anchor:[-5.4,3.7,-25],stop:tourStops[6],stopIndex:6,chapters:[{title:'街坊日常',pages:tourStops[6].pages}]},
  {id:'courtyard',name:'巷尾树下',short:'坐一会儿',kind:'回望来路，收好记忆',anchor:[2,3.8,-30],stop:tourStops[7],stopIndex:7,chapters:[{title:'慢慢坐',pages:[{label:'我 · 巷尾回望',title:'不赶路，也是一种逛法。',text:'回头看看来时的街。有人提着菜，有人在面摊边坐下，太阳慢慢照亮木窗。你随时可以回地图再选一家，也可以打开食篮，带走今天记下的味道。',kind:'story'}]}]},
- ...neighborhoodPlaces,
+ ...addedPlaces,
 ];
 export const placeById=(id:PlaceId)=>places.find(p=>p.id===id)!;
