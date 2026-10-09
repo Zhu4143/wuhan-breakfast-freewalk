@@ -2,9 +2,9 @@
 
 在淡彩绘本老街里，以第一人称走近武汉早餐铺，看看整条街的昔日与今日。停留约五分钟，从 05:00 的薄明走到 08:00 的早市。
 
-**公开源码与在线体验，无需登录即可查看。** [打开早餐街](https://geming-eng.github.io/wuhan-breakfast-freewalk/) · [GitHub 源码](https://github.com/GEMING-eng/wuhan-breakfast-freewalk) · [文化交流说明](CULTURE-DIALOGUE.md) · [人物配音清单](docs/voice/人物配音完整清单.md) · [手机加载调整](MOBILE-LOADING-UPDATE.md)
+**公开源码与在线体验，无需登录即可查看。** [打开早餐街](https://zhu4143.github.io/wuhan-breakfast-freewalk/) · [GitHub 源码](https://github.com/Zhu4143/wuhan-breakfast-freewalk) · [文化交流说明](CULTURE-DIALOGUE.md) · [人物配音清单](docs/voice/人物配音完整清单.md) · [手机加载调整](MOBILE-LOADING-UPDATE.md)
 
-2026-10-09 更新：六家早餐店的摊主文化交流、九十三段人物配音、手机封面与街景素材加载优化均包含在本次版本中。源码位于 `main`，在线网页使用 `gh-pages`。
+2026-10-09 更新：六家早餐店的摊主文化交流、九十三段人物配音、手机封面与街景素材加载优化均包含在本次版本中。按项目作者选择，最新版本公开发布到 `Zhu4143` 账号；源码位于 `main`，在线网页使用 `gh-pages`。此前 `GEMING-eng` 仓库保留旧版。
 
 ## 操作
 

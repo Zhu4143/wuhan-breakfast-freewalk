@@ -32,4 +32,4 @@
 
 83 项自动测试和生产 build 通过。逐段音频验证在 `verification.json`；首屏 / 重试 / 返回首页和五家旧店回归在 `startup-verification.json`；弱网记录在 `final-mobile-profile.json` / `load-comparison.json`。原资料清单的 93 段编号、文件名、正文与人物安排保持一致。
 
-详细音频、截图与浏览器证据保存在相邻 `../culture-qa/noodle-audio-mobile-20261008/` 目录，不随公开源码上传。2026-10-08 的 Sites 发布使用独立静态快照；2026-10-09 按用户要求将当前源码上传到公开的 `GEMING-eng/wuhan-breakfast-freewalk`，并将同一生产构建更新到 GitHub Pages。
+详细音频、截图与浏览器证据保存在相邻 `../culture-qa/noodle-audio-mobile-20261008/` 目录，不随公开源码上传。2026-10-08 的 Sites 发布使用独立静态快照；2026-10-09 按用户选择将当前源码上传到公开的 `Zhu4143/wuhan-breakfast-freewalk`，并将同一生产构建更新到 GitHub Pages。
