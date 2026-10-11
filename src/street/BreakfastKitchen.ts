@@ -3,6 +3,8 @@ import {PaperWorkshop} from '../atelier/PaperWorkshop';
 import {makeSteam} from '../atelier/Steam';
 import {eraVisibility,type ShopModule} from './ShopModule';
 import type {BreakfastShop} from './breakfastShops';
+import type {ShopEraFrame} from '../atelier/EraSequence';
+import {paperSeam} from './eraDomino';
 
 const V=(x:number,y:number,z:number)=>new T.Vector3(x,y,z);
 export type KitchenWallArt={past:HTMLImageElement;present:HTMLImageElement};
@@ -16,6 +18,7 @@ export class BreakfastKitchen implements ShopModule {
  private actors:T.Mesh[]=[];
  private steam:ReturnType<typeof makeSteam>;
  private turn=0;
+ private foodTurn=0;private food=new T.Group();
  private speakingUntil=0;
  private requested=false;
  private disposed=false;
@@ -32,14 +35,14 @@ export class BreakfastKitchen implements ShopModule {
   g.add(...this.eras);
   this.eras.forEach((era,i)=>this.furniture(era,i===0));
   portraits.forEach((img,i)=>{
-   const actor=w.print(this.eras[i],img,3.30*img.width/img.height,3.30,[.65,1.75,-.26],true);
+   const actor=w.print(g,img,3.30*img.width/img.height,3.30,[.65,1.75,-.26],true);
    actor.name=this.id+'-keeper-'+(i?'present':'past');actor.userData.noAO=true;this.actors.push(actor);
   });
-  const food=new T.Group();food.name=this.id+'-food-model';food.position.set(-1.05,1.76,1.06);g.add(food);
+  const food=this.food;food.userData.animationRoot=true;food.name=this.id+'-food-model';food.position.set(-1.05,1.76,1.06);g.add(food);
   if(spec.recipe==='broth')this.broth(food);else this.steamer(food,spec.recipe==='shaomai');
   const steamRoot=new T.Group();steamRoot.userData.animationRoot=true;g.add(steamRoot);
   this.steam=makeSteam(w,steamRoot,V(-1.05,spec.recipe==='broth'?2.11:2.04,1.06));
-  w.batchStatic(g);w.batchScenery(g);this.setEraProgress(0);
+  w.batchStatic(g);w.batchScenery(this.food);w.batchScenery(g);this.setEraProgress(0);
  }
  mount(socket:T.Group){socket.getObjectByName('removable-closure-'+this.id)?.removeFromParent();socket.add(this.root);}
  private backWall(art:KitchenWallArt){
@@ -123,18 +126,20 @@ export class BreakfastKitchen implements ShopModule {
   }
   if(!shaomai){this.bowl(this.root,.73,1.78,1.30,.28);w.cylinder(this.root,.22,.009,[.73,1.975,1.30],'#735a42',24);for(let j=0;j<8;j++)w.line(this.root,[V(.60+j*.033,1.99,1.20),V(.68+j*.025,1.99,1.40)],'#d9c795',.01);}
  }
- setEraProgress(turn:number){
+ setEraProgress(turn:number,frame?:ShopEraFrame){
   this.turn=T.MathUtils.clamp(turn,0,1);const e=eraVisibility(this.turn);
-  this.hinges.forEach(h=>{h.rotation.y=this.turn*Math.PI;h.position.z=-2.35-Math.sin(this.turn*Math.PI)*1.18;});
-  this.eras.forEach((g,i)=>g.visible=e.furniture&&(e.present?i===1:i===0));
-  this.host.setAttribute('data-'+this.id+'-era',e.present?'present':'past');
+  this.hinges.forEach((h,i)=>{const p=frame?.panels[i]??this.turn;h.rotation.y=p*Math.PI;h.position.z=-2.35-Math.sin(p*Math.PI)*1.18;});
+  this.eras.forEach((g,i)=>{g.visible=frame?(frame.furniture<.5?i===0:i===1):e.furniture&&(e.present?i===1:i===0);g.scale.x=frame?paperSeam(frame.furniture):1;});
+  this.actors.forEach((g,i)=>{const p=frame?.keeper??this.turn;g.visible=frame?(p<.5?i===0:i===1):e.furniture&&(e.present?i===1:i===0);g.rotation.y=(p<.5?p:p-1)*Math.PI;});
+  this.foodTurn=frame?.food??this.turn;this.food.rotation.x=-Math.sin(this.foodTurn*Math.PI)*.14;
+  this.host.setAttribute('data-'+this.id+'-era',(frame?.keeper??this.turn)>=.5?'present':'past');
  }
  speak(){this.requested=true;}
  update(time:number,camera:T.Camera,motion:boolean){
   if(this.disposed)return;if(this.requested){this.speakingUntil=time+3;this.requested=false;}
   const greeting=motion&&time<this.speakingUntil;
   this.actors.forEach(actor=>{actor.rotation.z=greeting?Math.sin(time*2.4)*.008:0;actor.position.y=1.75+(motion?Math.sin(time*.9)*.004:0);});
-  this.steam.update(time,camera,true);this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.24*eraVisibility(this.turn).steam);
+  this.steam.update(time,camera,true);this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.24*eraVisibility(this.foodTurn).steam);
   this.host.setAttribute('data-'+this.id+'-greeting',String(greeting));
  }
  dispose(){this.disposed=true;this.root.removeFromParent();this.anchors.clear();}

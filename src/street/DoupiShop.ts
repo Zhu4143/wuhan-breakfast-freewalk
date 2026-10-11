@@ -3,6 +3,8 @@ import {PaperWorkshop} from '../atelier/PaperWorkshop';
 import {makeSteam} from '../atelier/Steam';
 import type {ShopModule} from './ShopModule';
 import {shopFrame, eraVisibility} from './ShopModule';
+import type {ShopEraFrame} from '../atelier/EraSequence';
+import {paperSeam} from './eraDomino';
 
 const V = (x: number, y: number, z: number) => new T.Vector3(x, y, z);
 export type DoupiArt = {past: HTMLImageElement; present: HTMLImageElement; keeper: HTMLImageElement; keeperToday: HTMLImageElement};
@@ -21,6 +23,7 @@ export class DoupiShop implements ShopModule {
   private elapsed = 0;
   private speakingUntil = 0;
   private turn = 0;
+  private foodTurn=0; private food=new T.Group();
   private disposed = false;
   private canopy = new T.Group();
   private speechRequested = false;
@@ -44,7 +47,7 @@ export class DoupiShop implements ShopModule {
     const steamRoot = new T.Group(); steamRoot.userData.animationRoot = true; steamRoot.name = 'doupi-steam'; g.add(steamRoot);
     this.steam = makeSteam(w, steamRoot, V(-.65, 2.13, 1));
     // Merge within each era; never merge across the two switchable groups or hinge roots.
-    w.batchStatic(g); w.batchScenery(g);
+    w.batchStatic(g); w.batchScenery(this.food); w.batchScenery(g);
     this.setEraProgress(0);
   }
   mount(socket: T.Group) {
@@ -143,7 +146,7 @@ export class DoupiShop implements ShopModule {
     w.box(g,[6.4,1.42,1.37],[0,.91,1],'#b28a67','wood');
     for(let j=0;j<14;j++)w.box(g,[.024,1.25,.02],[-3+j*.46,.94,1.704],'#8d785c','wood');
     for(const y of [.33,1.53])w.box(g,[6.49,.09,.085],[0,y,1.745],'#a17e59','wood');
-    const pan=new T.Group();pan.position.set(-.65,1.735,1);g.add(pan);
+    const pan=this.food;pan.userData.animationRoot=true;pan.position.set(-.65,1.735,1);g.add(pan);
     w.mesh(pan,new T.LatheGeometry([[0,0],[1.28,.005],[1.38,.05],[1.47,.14],[1.45,.16],[1.36,.075],[1.25,.04],[0,.04]].map(([a,b])=>new T.Vector2(a,b)),40),w.material('#747c6c','metal'));
     for(const side of [-1,1])w.line(pan,[V(side*1.4,.08,-.23),V(side*1.66,.16,-.23),V(side*1.66,.16,.23),V(side*1.4,.08,.23)],'#6a7467',.035);
     // Dimensional square pieces with separate skin, irregular rice grains and filling.
@@ -176,18 +179,19 @@ export class DoupiShop implements ShopModule {
     for(let i=0;i<6;i++)w.line(spatula,[V(-.12+i*.04,.03,-.12),V(-.09+i*.04,.03,.13)],'#aeb2a0',.002);
     this.host.dataset.doupiRiceGrains=String(grainIndex);
   }
-  setEraProgress(turn: number) {
+  setEraProgress(turn: number, frame?: ShopEraFrame) {
     this.turn=T.MathUtils.clamp(turn,0,1);const e=eraVisibility(this.turn);
-    this.panels.forEach(p=>p.rotation.y=this.turn*Math.PI);
+    this.panels.forEach((p,i)=>p.rotation.y=(frame?.panels[i]??this.turn)*Math.PI);
     // Retreat just the hinged rear wall, leaving the socket and street fixed.
-    this.wall.position.z=-2.31-Math.sin(this.turn*Math.PI)*1.22;
-    this.canopy.rotation.x=-Math.sin(this.turn*Math.PI)*.85;
-    this.eras.forEach((g,i)=>g.visible=e.furniture&&(e.present?i===1:i===0));
-    this.actors.forEach((g,i)=>g.visible=e.furniture&&(e.present?i===1:i===0));
-    this.host.dataset.doupiEra=e.present?'present':'past';
-    this.host.dataset.doupiWallAngle=(this.turn*180).toFixed(1);
+    this.wall.position.z=-2.31-Math.sin((frame?.wall??this.turn)*Math.PI)*1.22;
+    this.canopy.rotation.x=-Math.sin((frame?.wall??this.turn)*Math.PI)*.85;
+    this.eras.forEach((g,i)=>{g.visible=frame?(frame.furniture<.5?i===0:i===1):e.furniture&&(e.present?i===1:i===0);g.scale.x=frame?paperSeam(frame.furniture):1;});
+    this.actors.forEach((g,i)=>{g.visible=frame?(frame.keeper<.5?i===0:i===1):e.furniture&&(e.present?i===1:i===0);g.rotation.y=frame?(frame.keeper<.5?frame.keeper:frame.keeper-1)*Math.PI:0;});
+    this.foodTurn=frame?.food??this.turn;this.food.rotation.x=-Math.sin(this.foodTurn*Math.PI)*.14;
+    this.host.dataset.doupiEra=(frame?.keeper??this.turn)>=.5?'present':'past';
+    this.host.dataset.doupiWallAngle=((frame?.panels[0]??this.turn)*180).toFixed(1);
     this.host.dataset.doupiVisibleActors=String(this.actors.filter(a=>a.visible).length);
-    this.host.dataset.doupiFurniture=String(e.furniture);
+    this.host.dataset.doupiFurniture=String(this.eras.some(g=>g.visible));
   }
   speak(){this.speechRequested=true;}
   update(time: number, camera: T.Camera, motion: boolean) {
@@ -197,7 +201,7 @@ export class DoupiShop implements ShopModule {
     this.faces.forEach(face=>face(f.from,f.to,f.blend,f.blink));
     this.actors.forEach(actor=>actor.scale.y=1+(motion?Math.sin(time*1.1)*.0018:0));
     this.steam.update(time,camera,true);
-    this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.24*eraVisibility(this.turn).steam);
+    this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.24*eraVisibility(this.foodTurn).steam);
     this.host.dataset.doupiMouth=String(f.from);this.host.dataset.doupiBlink=String(f.blink>.2);this.host.dataset.doupiSpeaking=String(f.speaking);
     this.host.dataset.doupiSteamTime=time.toFixed(2);
   }

@@ -1,0 +1,28 @@
+/* Adapt the supplied amber design to the current food-poster feature. */
+.market-explore .explore-basket.is-open{left:28px;top:194px;bottom:72px;width:340px;max-height:660px}
+.market-explore .basket-poster b,.market-explore .basket-poster-actions button{color:var(--ex-ink)}
+.market-explore .basket-poster small{color:var(--ex-muted)}
+.market-explore .basket-poster-actions{border-color:var(--ex-line)}
+.market-explore .basket-poster-actions .basket-poster-remove{color:var(--ex-accent)}
+.market-explore :is(.directory-photo-entry,.photo-board-pin){background:var(--amber-glass),var(--amber-surface);border-color:var(--ex-line);color:var(--ex-ink);box-shadow:var(--amber-shadow);backdrop-filter:blur(18px)}
+.market-explore .directory-photo-entry{min-height:48px;font:18px var(--amber-font)!important}
+.market-explore .directory-photo-entry small{color:var(--ex-muted)}
+.market-explore .photo-gallery{background:var(--amber-glass),#eed6abf5;color:var(--ex-ink);border-color:var(--ex-line);box-shadow:var(--amber-shadow);backdrop-filter:blur(18px)}
+.market-explore .photo-gallery::backdrop{background:rgb(45 30 16 / calc(var(--veil,1)*.65));backdrop-filter:blur(5px)}
+.market-explore .photo-gallery button{border-color:var(--ex-line)}
+.market-explore .photo-gallery :is(.photo-gallery-intro,.photo-gallery-header p,.photo-gallery-footer p,.photo-gallery-grid small,.photo-gallery-grid em,.photo-gallery-detail figcaption){color:var(--ex-muted)}
+.market-explore .photo-gallery .photo-gallery-footer{border-color:var(--ex-line)}
+.market-explore[data-culture-open=true] .morning-clock{visibility:visible}
+@media(max-width:760px){
+ .market-explore .explore-toolbar{display:grid;grid-template-columns:1.52fr 1fr}
+ .market-explore .explore-toolbar>button{min-width:0;padding:0 6px}
+ .market-explore .explore-toolbar>button:first-child{grid-column:1;grid-row:1}
+ .market-explore .explore-toolbar>.explore-motion-toggle{grid-column:2;grid-row:1}
+ .market-explore .explore-era{grid-column:1;grid-row:2;min-width:0}
+ .market-explore .explore-era button{min-width:0;flex:1;padding:0 8px}
+ .market-explore .explore-toolbar>.explore-sound-toggle{grid-column:2;grid-row:2}
+ .market-explore .explore-toolbar .gallery-toolbar-entry{display:none}
+ .market-explore .explore-basket.is-open{left:14px;top:181px;bottom:calc(167px + env(safe-area-inset-bottom));width:calc(100% - 28px);max-height:none}
+}
+@media(min-width:761px) and (max-height:700px){.market-explore .explore-basket.is-open{top:159px;bottom:26px}}
+@media(orientation:landscape) and (max-height:520px){.market-explore .explore-basket.is-open{left:14px;top:132px;bottom:14px;width:310px}}

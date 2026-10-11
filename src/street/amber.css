@@ -1,0 +1,406 @@
+/* Amber glass: one material across the street UI, independent of the scene era. */
+.market-explore,.market-explore[data-era=present]{
+ --ex-paper:#edd3a4;--ex-ink:#44301b;--ex-muted:#705638;--ex-accent:#a54828;--ex-line:#fff0c4bb;--ex-soft:#fff0c426;--ex-deep:#995914;--ex-shadow:#58371840;--ex-radius:22px;--paper-grain:none;--street-coral:var(--ex-accent);
+ --amber-glass:linear-gradient(120deg,#ffdfa897,#ffeccc9c 48%,#e5c181a6);--amber-surface:#e3c48cce;
+ --amber-shadow:inset 0 0 0 1px #fff6d269,inset 0 0 15px #ffe4a979,0 0 10px #ffd78c69,0 8px 28px #55361935;
+ --amber-active:linear-gradient(150deg,#d59b50,#9b5d1ddf 75%,#cd9245);--amber-font:'STKaiti','KaiTi','Kaiti SC','SimSun',serif;
+ min-height:0;height:100dvh;color:var(--ex-ink)
+}
+.market-explore :is(button,a,input):focus-visible{outline:2px solid #573311;outline-offset:4px;box-shadow:0 0 0 7px #fff2bda6}
+.market-explore button{transition:background .18s,box-shadow .18s,filter .18s;color:inherit}
+.market-explore button:disabled{cursor:default}
+.market-explore button:not(:disabled):hover{filter:brightness(1.06)}
+.market-explore :is(.explore-brand,.explore-toolbar>button,.explore-era,.explore-basket,.basket-mobile-trigger,.street-directory,.explore-reading,.explore-location,.explore-reopen,.explore-travel,.explore-turning,.explore-toast,.explore-sources,.morning-clock,.walk-zoom button,.culture-card,.culture-entry-collapsed,.cover-header>button){background:var(--amber-glass),var(--amber-surface);color:var(--ex-ink);border:1px solid #fff0bf;border-radius:var(--ex-radius);box-shadow:var(--amber-shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.market-explore :is(.explore-copy,.explore-sources p,.basket-bottom p,.basket-empty small,.cover-description,.explore-location>span,.explore-travel button,.explore-reading-top,.explore-reading-footer>span,.explore-inline-era span){color:var(--ex-muted)}
+.market-explore :is(.explore-reading,.explore-basket,.street-directory):before{display:none}
+.market-explore :is(.explore-era button[aria-pressed=true],.explore-chapters button[aria-pressed=true],.explore-inline-era button[aria-pressed=true],.explore-reading-footer button:last-child,.cover-enter,.basket-download){color:#fff7df;background:var(--amber-active);border:1px solid #ffedbb;box-shadow:inset 0 0 9px #ffdc898f,0 0 7px #ffe18ba6,0 2px 7px #915e2533}
+.market-explore .explore-header{inset:28px 28px auto;align-items:flex-start;gap:20px}
+.market-explore .explore-brand{padding:13px 18px;gap:16px;flex-shrink:0;border-radius:19px;min-height:80px}
+.market-explore .explore-brand>b{width:37px;height:46px;border:1px solid #b45229;border-radius:3px;outline:1px solid #fff2d8;outline-offset:3px;color:#a74122;font:38px/1.1 var(--amber-font);background:#fff3cf70;display:grid;place-items:center}
+.market-explore .explore-brand>span{font:29px var(--amber-font);letter-spacing:4px;white-space:nowrap;text-align:left}
+.market-explore .explore-brand small{font:12px/1.5 'SimSun',serif;letter-spacing:1px;margin-top:7px;color:var(--ex-muted)}
+.market-explore .explore-toolbar{gap:9px;margin-top:14px;display:flex;align-items:stretch;flex-wrap:wrap;justify-content:flex-end}
+.market-explore .explore-toolbar>button{min-height:48px;padding:0 18px;font:17px var(--amber-font);letter-spacing:1px;border-radius:14px}
+.market-explore .explore-era{padding:0;display:flex;gap:0;border-radius:14px}
+.market-explore .explore-era button{min-width:67px;min-height:48px;padding:0 17px;border-radius:13px;font:18px var(--amber-font);letter-spacing:2px;border:1px solid transparent}
+.market-explore .explore-era button[aria-pressed=true]{border-color:#fff0b8}
+.market-explore .basket-mobile-trigger{top:126px;left:28px;min-height:48px!important;padding:5px 13px;gap:10px;font:20px var(--amber-font)!important;border-radius:14px}
+.market-explore .basket-mobile-trigger svg{width:27px;height:27px}
+.market-explore .basket-mobile-trigger b{height:30px;width:30px;background:#ffedc699;color:var(--ex-ink);font:16px Georgia,serif;box-shadow:inset 0 1px 2px #fff4d7}
+.market-explore .explore-location{top:126px;left:229px;min-height:48px;padding:4px 6px 4px 17px;gap:16px;border-radius:14px}
+.market-explore .explore-location>span{font-size:12px}
+.market-explore .explore-location b{font:21px var(--amber-font)}
+.market-explore .explore-location button{min-height:38px;border:1px solid #fff0bc77;border-radius:9px;background:#b174343b;color:#714422;padding:0 12px;font:15px var(--amber-font)}
+.market-explore .explore-location button:after{content:' ›';margin-left:3px}
+/* Story card: centred content stays open to the street. */
+.market-explore .explore-reading{right:28px;bottom:72px;width:clamp(390px,29.5vw,490px);max-height:calc(100dvh - 276px);border-radius:24px}
+.market-explore .explore-reading-top{padding:12px 17px 10px 27px;min-height:52px;border-bottom:1px solid var(--ex-line);font:13px 'SimSun',serif;letter-spacing:.5px}
+.market-explore :is(.explore-reading-top button,.basket-close,.street-directory>div:first-child>button){display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;min-width:44px;min-height:44px!important;padding:0;font:29px/1 var(--amber-font);color:#654625;background:#ffedc473;border:0;border-radius:50%}
+.market-explore .explore-chapters{padding:13px 25px 0;gap:9px}
+.market-explore .explore-chapters button{min-height:40px;padding:0 16px;border:1px solid var(--ex-line);border-radius:11px;font:16px var(--amber-font);background:#ffedbe20;flex:1;white-space:nowrap}
+.market-explore .explore-reading-body{padding:18px 27px 12px;flex:1 1 auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#a96b3980 transparent}
+.market-explore .explore-eyebrow{font:15px/1.7 var(--amber-font);letter-spacing:.5px;color:var(--ex-accent);margin:0 0 6px}
+.market-explore .explore-reading h2{font:clamp(27px,2.05vw,35px)/1.55 var(--amber-font);letter-spacing:1px;margin:6px 0 14px;color:#3d2915}
+.market-explore .explore-copy{font:16px/1.95 'SimSun','Songti SC',serif;margin:0 0 15px;overflow-wrap:anywhere}
+.market-explore .explore-add-food{padding:13px 15px;gap:13px;margin-top:18px;min-height:84px;background:#fff1c320;border:1px solid #fff0c5;border-radius:15px;box-shadow:inset 0 1px 0 #ffefc753}
+.market-explore .explore-add-food img{width:67px;height:62px;flex-shrink:0;filter:drop-shadow(0 3px 3px #66442124)}
+.market-explore .explore-add-food span{min-width:0}
+.market-explore .explore-add-food b{font:21px/1.4 var(--amber-font);font-weight:400}
+.market-explore .explore-add-food small{font:12px/1.7 'SimSun',serif;color:var(--ex-muted);margin-top:6px}
+.market-explore .explore-add-food i{display:grid;place-items:center;flex-shrink:0;width:42px;height:42px;border-radius:50%;border:1px solid #f5d9a2;background:linear-gradient(130deg,#daa052,#996020);color:#fff3d6;font:30px/1 Georgia,serif;box-shadow:inset 0 1px 7px #ffdf9466}
+.market-explore .explore-add-food:disabled{opacity:.8!important}
+.market-explore .explore-evidence{border:0;padding:0;margin-top:14px;gap:12px}
+.market-explore .explore-evidence>span{border:1px solid #fff1ce9e;border-radius:7px;font:11px/1.5 'SimSun',serif;padding:3px 10px;color:var(--ex-muted)}
+.market-explore .explore-evidence button{min-height:44px;font-size:12px;color:#77472c}
+.market-explore .explore-reading-footer{padding:9px 20px 12px;border-top:1px solid #fff0c4ab;gap:12px;background:#ffe4a917}
+.market-explore .explore-reading-footer button{min-height:44px;padding:0 17px;border-radius:12px;font:15px var(--amber-font)}
+.market-explore .explore-reading-footer>span{font:14px Georgia,serif;white-space:nowrap}
+.market-explore .explore-inline-era{gap:12px}
+.market-explore .explore-inline-era button{min-height:44px;font:16px var(--amber-font);border-radius:11px;padding:0 17px}
+.market-explore .explore-inline-era span{font:12px/1.7 'SimSun',serif;text-align:center}
+.market-explore .shop-waking{border-color:#b76e35;background:#fff0c538;border-radius:0 12px 12px 0;font-size:12px;padding:12px;margin:0 0 17px}
+.market-explore .shop-waking>span{font-size:13px;color:#8e4828}
+.market-explore .culture-entry{margin:0 25px 13px;padding:11px 16px;min-height:55px;gap:10px;border:1px solid #fff0c5;border-radius:14px;background:#fff1c523;box-shadow:inset 0 1px 0 #fff8dd66;font:20px var(--amber-font);flex-shrink:0}
+.market-explore .culture-entry>svg{width:24px;height:24px;flex:none}
+.market-explore .culture-entry>strong{font-weight:400;white-space:nowrap}
+.market-explore .culture-entry>span{font:12px/1.6 'SimSun',serif;color:var(--ex-muted);margin-left:auto;text-align:right}
+.market-explore .culture-entry>.culture-entry-arrow{width:13px;height:22px}
+.market-explore .culture-entry-collapsed{right:28px;bottom:134px;margin:0;min-width:340px;background:var(--amber-glass),var(--amber-surface);box-shadow:var(--amber-shadow)}
+.market-explore .explore-reopen{right:28px;bottom:72px;min-height:48px;padding:10px 23px;font:19px var(--amber-font)!important;border-radius:15px}
+/* Dawn is a real, scrubbable clock. */
+.market-explore .morning-clock{left:48%;bottom:28px;translate:-50% 0;width:510px;padding:11px 21px 14px;border-radius:20px;z-index:8}
+.market-explore[data-reading=true] .morning-clock,.market-explore[data-culture-open=true] .morning-clock{left:calc((100% - clamp(390px,29.5vw,490px) - 28px)/2)}
+.market-explore .morning-clock-top{gap:12px}
+.market-explore .morning-clock-top>svg{width:33px;height:33px;color:#af542b}
+.market-explore .morning-clock-top>div{display:flex;align-items:baseline;gap:13px;white-space:nowrap}
+.market-explore .morning-clock-top>div>span{font:22px var(--amber-font);letter-spacing:1px}
+.market-explore .morning-clock time{font:25px Georgia,serif;letter-spacing:.5px;color:#a24627;font-variant-numeric:tabular-nums}
+.market-explore .morning-clock-top>p{font:12px 'SimSun',serif;white-space:nowrap;color:var(--ex-muted);margin-left:auto}
+.market-explore .morning-clock-top>button{min-width:44px;min-height:44px;border:0;border-radius:50%;background:#ffedbc99;font:23px Georgia,serif;color:#66411e}
+.market-explore .morning-track{height:28px;margin:2px 0 0}
+.market-explore .morning-track:before{top:12px;height:5px;background:linear-gradient(90deg,#6c748b,#be7345 57%,#e3b94e);border:1px solid #fff3c6;box-shadow:0 1px 3px #80551b29}
+.market-explore .morning-track input{height:28px;outline-offset:0;border-radius:10px}
+.market-explore .morning-track input::-webkit-slider-thumb{width:23px;height:23px;border:3px solid #fff0c5;background:#bf632e;box-shadow:0 0 0 1px #d99249,0 0 8px #fff0c79c}
+.market-explore .morning-track input::-moz-range-thumb{width:17px;height:17px;border:3px solid #fff0c5;background:#bf632e;box-shadow:0 0 0 1px #d99249}
+.market-explore .morning-clock-ticks{font:12px 'SimSun',serif;letter-spacing:0}
+.market-explore .morning-clock-ticks small{font:13px var(--amber-font);color:#974626;letter-spacing:.5px}
+.market-explore .walk-hud{bottom:156px;left:48%;padding:7px 12px;transform:translateX(-50%);border-radius:10px;color:#fff5df;background:#53361994;text-shadow:none;white-space:nowrap}
+.market-explore .walk-hud p{font-size:11px;letter-spacing:.5px}
+.market-explore[data-reading=true] .walk-hud,.market-explore[data-culture-open=true] .walk-hud{display:none}
+.market-explore .walk-zoom{right:28px;bottom:28px;gap:8px;flex-direction:row}
+.market-explore .walk-zoom button{width:44px;height:44px;min-height:44px!important;font-size:26px!important;border-radius:12px}
+.market-explore .explore-pin>i{width:18px;height:18px;background:#b97628;border:3px solid #ffe4a3;box-shadow:0 0 0 1px #a7652799,0 0 12px #ffca71c9}
+.market-explore .explore-pin[data-open=false]>i{background:#b99c73;border-color:#ffedb3}
+.market-explore .explore-pin.is-visited>i{background:#a34d26}
+.market-explore .explore-pin:hover>i{box-shadow:0 0 0 5px #ffe29b40,0 0 18px #ffcc70}
+.market-explore .explore-footer{inset:auto 28px 8px;font:10px 'SimSun',serif;color:#fff1d3;text-shadow:0 1px 5px #35291e}
+/* Drawers, conversations and handbook share the same glass. */
+.market-explore .explore-basket{left:28px;top:194px;bottom:72px;width:340px;max-height:660px;border-radius:24px}
+.market-explore .basket-heading{padding:18px 20px 15px;gap:10px;border-bottom:1px solid var(--ex-line)}
+.market-explore .basket-heading h2{font:27px var(--amber-font)}
+.market-explore .basket-heading p{font:12px/1.7 'SimSun',serif;margin-top:6px}
+.market-explore .basket-heading>b{background:#ffebbc88;min-width:27px;height:27px;font-size:15px}
+.market-explore .basket-heading>svg{width:29px;color:#8f5628}
+.market-explore .basket-close{margin:-5px -9px 0 0}
+.market-explore .basket-items{padding:18px}
+.market-explore .basket-empty{padding:32px 0}
+.market-explore .basket-empty img{width:123px;height:102px;opacity:.9;filter:none}
+.market-explore .basket-empty p{font:24px var(--amber-font)}
+.market-explore .basket-empty small{font:14px/2 'SimSun',serif}
+.market-explore .basket-item{padding:11px 9px;border-radius:15px;background:#fff0c32b;margin-bottom:12px}
+.market-explore .basket-food{gap:12px}
+.market-explore .basket-food img{width:62px;height:59px}
+.market-explore .basket-food b{font:21px var(--amber-font)}
+.market-explore .basket-food small{font:12px/1.6 'SimSun',serif;max-width:none}
+.market-explore .basket-remove{min-width:44px;min-height:44px;font-size:25px!important;color:#805536!important}
+.market-explore .basket-bottom{padding:15px 20px 19px;border-top:1px solid var(--ex-line)}
+.market-explore .basket-bottom p{font:12px/1.8 'SimSun',serif}
+.market-explore .basket-download{min-height:47px;border-radius:12px;font:18px var(--amber-font)!important}
+.market-explore .basket-scrim{background:#3d2d203b!important;backdrop-filter:blur(3px)}
+.market-explore .street-directory{right:28px;top:112px;left:auto;width:410px;max-height:calc(100dvh - 280px);padding:22px;border-radius:23px}
+.market-explore .street-directory h2{font:29px var(--amber-font)}
+.market-explore .street-directory>p{font:13px 'SimSun',serif;margin:9px 0 18px}
+.market-explore .explore-place-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.market-explore .explore-place-list button{min-height:72px!important;padding:13px 15px;border-radius:13px;background:#ffefc42e;border:1px solid var(--ex-line)}
+.market-explore .explore-place-list b{font:20px var(--amber-font);color:var(--ex-ink)}
+.market-explore .explore-place-list small{font:11px/1.5 'SimSun',serif;color:var(--ex-muted);margin-top:7px}
+.market-explore .explore-place-list i{font-size:18px;color:#9f5c2a}
+.market-explore .directory-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}
+.market-explore .directory-note{font:11px/1.7 'SimSun',serif;margin:0}
+.market-explore .directory-bottom>button{min-height:44px;min-width:78px;font:14px var(--amber-font);white-space:nowrap;color:#84451f}
+.market-explore .culture-card{left:auto;right:28px;bottom:72px;width:clamp(390px,29.5vw,490px);max-height:calc(100dvh - 276px);padding:21px 26px;border-radius:24px;scrollbar-width:thin;scrollbar-color:#a96b3980 transparent}
+.market-explore .culture-heading{border-bottom:1px solid var(--ex-line);padding-bottom:13px}
+.market-explore .culture-heading>div{flex-direction:column-reverse;align-items:flex-start;gap:6px}
+.market-explore .culture-heading h2{font:28px var(--amber-font);color:var(--ex-ink)}
+.market-explore .culture-heading span{font:12px 'SimSun',serif;color:#96532c}
+.market-explore .culture-heading>button{min-height:44px;padding:0 10px;font:14px var(--amber-font);border-radius:12px;background:#ffedc24f}
+.market-explore .culture-line{padding:21px 0;min-height:114px}
+.market-explore .culture-reply{font:16px/2 'SimSun','Songti SC',serif;color:var(--ex-ink)}
+.market-explore .culture-questions{gap:10px}
+.market-explore .culture-questions>button{min-height:52px;padding:12px 15px;border-radius:12px;border:1px solid var(--ex-line);background:#fff1c333;font:17px/1.5 var(--amber-font)}
+.market-explore .culture-questions>button[aria-pressed=true]{background:#d3954645;color:#714116}
+.market-explore .culture-questions small{font-size:11px}
+.market-explore .culture-footer{margin-top:16px;padding-top:12px;border-color:var(--ex-line);font-size:12px}
+.market-explore .culture-footer button{min-height:44px;font:14px var(--amber-font);color:#824b25}
+.market-explore .culture-voice-note{font:12px/1.7 'SimSun',serif;color:var(--ex-muted)}
+.market-explore[data-culture-open=true] .morning-clock{display:block}
+.market-explore .explore-sources{width:680px;max-width:calc(100vw - 32px);padding:30px 36px;max-height:84dvh;border-radius:25px;background:var(--amber-glass),#eed6abf5}
+.market-explore .explore-sources::backdrop{background:rgb(45 30 16 / calc(var(--veil,1)*.65));backdrop-filter:blur(5px)}
+.market-explore .explore-dialog-close{min-height:44px;padding:5px 16px;border:1px solid var(--ex-line);border-radius:12px;font:16px var(--amber-font)!important;background:#fff1c440}
+.market-explore .explore-sources h2{font:32px/1.5 var(--amber-font);margin:19px 0}
+.market-explore .explore-sources p{font:15px/1.95 'SimSun',serif}
+.market-explore .explore-sources section{border-top:1px solid #b98f5355;padding-top:18px;margin-top:24px}
+.market-explore .explore-sources section>small{font:12px/1.8 'SimSun',serif;color:#8a492a}
+.market-explore .explore-sources h3{font:23px/1.6 var(--amber-font);color:var(--ex-ink)}
+.market-explore .explore-travel{bottom:186px;left:48%;padding:15px 27px;border-radius:19px}
+.market-explore .explore-travel p{font:22px var(--amber-font)}
+.market-explore .explore-travel button{min-height:44px;font:15px var(--amber-font)}
+.market-explore .explore-turning{top:193px;font:18px var(--amber-font);padding:15px 25px;border-radius:16px}
+.market-explore .explore-toast{bottom:183px;width:max-content;max-width:calc(100% - 32px);padding:15px 24px;border-radius:16px;font:18px var(--amber-font)}
+.market-explore .explore-loading{background:#e8c692dc;backdrop-filter:blur(12px);color:#634120;font:27px var(--amber-font)}
+.market-explore .explore-loading button{min-height:48px;border-radius:14px;border-color:#ffedc6;background:var(--amber-active);color:#fff0d0}
+/* Full-bleed cover with a readable dawn vignette. */
+.market-explore .market-cover{background:#ddbc83}
+.market-explore .market-cover-art,.market-explore[data-era=present] .market-cover-art{filter:saturate(.95) brightness(.96);opacity:1}
+.market-explore .market-cover:after{background:linear-gradient(90deg,#f6dba9f2 0%,#edcb99ce 24%,#cd935323 57%,transparent 75%),linear-gradient(0deg,#55351b70,transparent 24%)}
+.market-explore .cover-header{top:28px;left:36px;right:36px}
+.market-explore .cover-header>button{min-height:48px;padding:0 20px;font:16px var(--amber-font);border-radius:14px}
+.market-explore .cover-copy{left:7%;max-width:48vw}
+.market-explore .cover-eyebrow{font:15px var(--amber-font);letter-spacing:3px;color:#99542e}
+.market-explore .cover-eyebrow>span{background:#ac6030}
+.market-explore .cover-copy h1{font:clamp(52px,5.1vw,82px)/1.25 var(--amber-font);letter-spacing:2px;color:#49311e;margin:22px 0}
+.market-explore .cover-copy h1>span{color:#a6512d}
+.market-explore .cover-description{font:17px/2 'SimSun',serif;color:#735032}
+.market-explore .cover-enter{min-height:56px;padding:12px 24px;min-width:270px;margin:26px 0 20px;border-radius:15px;font:22px var(--amber-font)!important}
+.market-explore .cover-notes{font:12px 'SimSun',serif;letter-spacing:1px;color:#755536}
+.market-explore .cover-saved{font:13px 'SimSun',serif;color:#88562d}
+.market-explore .cover-footer{left:7%;bottom:28px;color:#fff0cf}
+.market-explore .cover-footer>span{font:16px var(--amber-font);color:inherit}
+.market-explore .cover-footer small{font:11px 'SimSun',serif;color:inherit}
+@media(min-width:761px) and (max-width:1150px){
+ .market-explore .explore-header{inset:22px 22px auto;gap:14px}
+ .market-explore .explore-brand{padding:12px 15px;gap:12px}
+ .market-explore .explore-brand>span{font-size:25px;letter-spacing:2px}
+ .market-explore .explore-toolbar{gap:6px;max-width:470px;margin-top:7px}
+ .market-explore .explore-toolbar>button{padding:0 12px;font-size:15px}
+ .market-explore .explore-era button{min-width:55px;padding:0 12px;font-size:16px}
+ .market-explore .explore-source-top{display:none}
+ .market-explore .explore-reading,.market-explore .culture-card{right:22px;width:360px;bottom:80px;max-height:calc(100dvh - 270px)}
+ .market-explore .explore-reading-body{padding:15px 21px 12px}
+ .market-explore .explore-reading-top{padding-left:21px}
+ .market-explore .explore-chapters{padding:12px 20px 0;gap:6px}
+ .market-explore .explore-chapters button{font-size:15px;padding:0 9px}
+ .market-explore .explore-reading h2{font-size:28px}
+ .market-explore .explore-copy{font-size:15px}
+ .market-explore .explore-add-food{padding:11px;gap:9px}
+ .market-explore .explore-add-food img{width:52px;height:51px}
+ .market-explore .explore-add-food b{font-size:18px}
+ .market-explore .explore-add-food small{font-size:11px}
+ .market-explore .culture-entry{margin:0 20px 12px;padding:10px 12px;font-size:18px}
+ .market-explore .culture-entry>span{font-size:11px}
+ .market-explore .morning-clock{width:390px;left:45%;padding:10px 16px 13px}
+ .market-explore[data-reading=true] .morning-clock,.market-explore[data-culture-open=true] .morning-clock{left:calc((100% - 382px)/2);max-width:calc(100% - 404px)}
+ .market-explore .morning-clock-top{gap:8px}
+ .market-explore .morning-clock-top>div{gap:8px}
+ .market-explore .morning-clock-top>div>span{font-size:20px}
+ .market-explore .morning-clock time{font-size:22px}
+ .market-explore .morning-clock-top>p,.market-explore .morning-clock-ticks small{display:none}
+ .market-explore .morning-clock-top>button{margin-left:auto}
+}
+@media(max-width:760px){
+ .market-explore{--ex-radius:20px;--amber-surface:#e3c48ce6;min-height:0;height:100dvh}
+ .market-explore .explore-header{inset:max(14px,env(safe-area-inset-top)) 14px auto;gap:10px}
+ .market-explore .explore-header .explore-brand{width:auto;min-height:64px;padding:11px 12px;gap:9px;border-radius:17px}
+ .market-explore .explore-brand>b{width:27px;height:36px;font-size:28px;outline-offset:2px}
+ .market-explore .explore-header .explore-brand>span{font-size:20px;letter-spacing:2px}
+ .market-explore .explore-brand small{font-size:9px;letter-spacing:0;margin-top:6px}
+ .market-explore .explore-toolbar{width:184px;max-width:184px;flex:none;margin:0;gap:7px;justify-content:flex-end}
+ .market-explore .explore-toolbar>button{font:14px var(--amber-font);min-height:44px;padding:0 12px;border-radius:12px;letter-spacing:0}
+ .market-explore .explore-era{border-radius:12px}
+ .market-explore .explore-era button{min-width:47px;min-height:44px;padding:0 10px;font-size:16px;letter-spacing:0;border-radius:11px}
+ .market-explore .explore-source-top{display:none}
+ .market-explore .basket-mobile-trigger{top:120px;left:14px;min-height:44px!important;gap:7px;padding:4px 9px;border-radius:12px;font-size:16px!important}
+ .market-explore .basket-mobile-trigger svg{width:22px;height:22px}
+ .market-explore .basket-mobile-trigger b{width:25px;height:25px;font-size:14px}
+ .market-explore .explore-location{top:120px;left:auto;right:14px;max-width:calc(100% - 165px);gap:7px;min-height:44px;padding:3px 4px 3px 10px;border-radius:12px}
+ .market-explore .explore-location>span{display:none}
+ .market-explore .explore-location b{font:17px var(--amber-font);white-space:nowrap}
+ .market-explore .explore-location button{min-height:36px;padding:0 8px;font-size:12px;white-space:nowrap}
+ .market-explore .explore-location button:after{display:none}
+ .market-explore .explore-reading{left:14px;right:14px;width:auto;bottom:calc(174px + env(safe-area-inset-bottom));max-height:min(49dvh,calc(100dvh - 364px));border-radius:22px}
+ .market-explore .explore-reading:before{display:block;position:relative;top:auto;left:auto;right:auto;content:'';width:36px;height:4px;min-height:4px;margin:9px auto 0;background:#fff3cc;border-radius:3px;opacity:1}
+ .market-explore .explore-reading-top{padding:3px 10px 4px 17px;min-height:40px;font-size:11px;letter-spacing:0}
+ .market-explore .explore-reading-top button{width:36px;height:36px;min-width:44px;min-height:44px!important;background:radial-gradient(circle,#ffedc473 60%,transparent 63%);font-size:26px}
+ .market-explore .explore-chapters{padding:10px 16px 0;gap:6px}
+ .market-explore .explore-chapters button{min-height:44px;padding:0 9px;font-size:15px;border-radius:11px}
+ .market-explore .explore-reading-body{padding:12px 18px 10px;flex:1 1 auto}
+ .market-explore .explore-eyebrow{font-size:13px;margin-bottom:5px}
+ .market-explore .explore-reading h2{font:25px/1.45 var(--amber-font);letter-spacing:.3px;margin:5px 0 10px}
+ .market-explore .explore-copy{font:14px/1.95 'SimSun','Songti SC',serif;margin-bottom:12px}
+ .market-explore .explore-add-food{padding:10px;min-height:74px;gap:9px;margin-top:13px;border-radius:13px}
+ .market-explore .explore-add-food img{width:49px;height:48px}
+ .market-explore .explore-add-food b{font-size:18px}
+ .market-explore .explore-add-food small{font-size:11px;line-height:1.6;margin-top:4px}
+ .market-explore .explore-add-food i{width:36px;height:36px;font-size:25px}
+ .market-explore .explore-evidence{margin-top:11px}
+ .market-explore .explore-evidence>span{font-size:10px;padding:2px 7px}
+ .market-explore .explore-evidence button{font-size:11px}
+ .market-explore .culture-entry{margin:0 16px 10px;padding:9px 12px;min-height:48px;font-size:18px;border-radius:12px;gap:8px}
+ .market-explore .culture-entry>svg{width:22px;height:22px}
+ .market-explore .culture-entry>span{font-size:10px}
+ .market-explore .culture-entry>.culture-entry-arrow{width:11px}
+ .market-explore .explore-reading-footer{padding:6px 12px 8px;gap:8px}
+ .market-explore .explore-reading-footer button{min-height:44px;font-size:13px;padding:0 12px;border-radius:11px}
+ .market-explore .explore-reading-footer>span{font-size:12px}
+ .market-explore .morning-clock,.market-explore[data-reading=true] .morning-clock,.market-explore[data-culture-open=true] .morning-clock{left:132px;right:14px;bottom:calc(25px + env(safe-area-inset-bottom));translate:0;width:auto;max-width:none;padding:10px 13px 12px;border-radius:17px;display:block}
+ .market-explore .morning-clock-top{gap:7px;position:relative}
+ .market-explore .morning-clock-top>svg{width:25px;height:25px}
+ .market-explore .morning-clock-top>div{display:block;white-space:nowrap}
+ .market-explore .morning-clock-top>div>span{font:16px var(--amber-font);letter-spacing:0;display:block}
+ .market-explore .morning-clock time{font:22px/1.4 Georgia,serif;letter-spacing:0}
+ .market-explore .morning-clock-top>p{display:none}
+ .market-explore .morning-clock-top>button{margin-left:auto;min-width:44px;min-height:44px;font-size:21px}
+ .market-explore .morning-track{margin:1px 0 2px;height:25px}
+ .market-explore .morning-track input{height:25px}
+ .market-explore .morning-track:before{top:11px;height:4px}
+ .market-explore .morning-clock-ticks{font:10px 'SimSun',serif;letter-spacing:0;white-space:nowrap;gap:8px}
+ .market-explore .morning-clock-ticks small{display:none}
+ .market-explore .walk-joystick{left:14px;bottom:calc(29px + env(safe-area-inset-bottom));width:104px;height:104px;border:1px solid #ffecc2;background:radial-gradient(circle,#f7d99dd9 54%,#e6bd7dcc 55%);box-shadow:inset 0 0 0 9px #fff0c34d,0 0 14px #fbd49350,0 5px 19px #65431c39}
+ .market-explore .walk-joystick i{left:31px;top:31px;width:42px;height:42px;background:linear-gradient(130deg,#aa884f,#80602f);border:2px solid #fff1c9;box-shadow:0 3px 8px #6c482040}
+ .market-explore .joystick-arrows{inset:6px 0;color:#73532c;font-size:14px;line-height:29px}
+ .market-explore .walk-joystick small{display:none}
+ .market-explore .walk-zoom{right:14px;bottom:calc(140px + env(safe-area-inset-bottom));gap:7px;flex-direction:row}
+ .market-explore .walk-zoom button{width:44px;height:44px;min-height:44px!important;font-size:25px!important;border-radius:12px}
+ .market-explore[data-reading=true] .walk-zoom{right:auto;left:21px;bottom:calc(140px + env(safe-area-inset-bottom))}
+ .market-explore .walk-hud{left:14px;right:auto;bottom:calc(152px + env(safe-area-inset-bottom));max-width:calc(100% - 128px);padding:6px 8px;transform:none;border-radius:7px;text-align:left;white-space:normal}
+ .market-explore .walk-hud p{font-size:10px;letter-spacing:0}
+ .market-explore .explore-footer{inset:auto 14px max(7px,env(safe-area-inset-bottom));font-size:9px}
+ .market-explore .explore-basket{top:181px;bottom:calc(167px + env(safe-area-inset-bottom));left:14px;width:calc(100% - 28px);max-height:none;border-radius:22px}
+ .market-explore .basket-heading{padding:16px 18px 12px}
+ .market-explore .basket-heading p{font-size:11px}
+ .market-explore .basket-items{padding:14px}
+ .market-explore .basket-empty{padding:16px 0}
+ .market-explore .basket-empty img{width:92px;height:76px}
+ .market-explore .basket-empty p{font-size:23px;margin:12px 0 8px}
+ .market-explore .basket-bottom{padding:11px 18px 15px}
+ .market-explore .street-directory{left:14px;right:14px;top:181px;width:auto;max-height:calc(100dvh - 340px);padding:17px;border-radius:22px}
+ .market-explore .street-directory h2{font-size:26px}
+ .market-explore .street-directory>p{font-size:12px;margin:6px 0 12px}
+ .market-explore .explore-place-list{gap:8px;margin-top:12px}
+ .market-explore .explore-place-list button{min-height:65px!important;padding:10px 12px;border-radius:12px}
+ .market-explore .explore-place-list b{font-size:18px}
+ .market-explore .explore-place-list small{font-size:11px}
+ .market-explore .directory-bottom{margin-top:10px;gap:10px}
+ .market-explore .directory-note{font-size:10px}
+ .market-explore .directory-bottom>button{font-size:13px}
+ .market-explore .culture-card{left:14px;right:14px;bottom:calc(166px + env(safe-area-inset-bottom));width:auto;max-height:calc(100dvh - 350px);padding:17px 19px;border-radius:22px}
+ .market-explore .culture-heading{padding-bottom:10px;gap:10px}
+ .market-explore .culture-heading h2{font-size:25px}
+ .market-explore .culture-heading span{font-size:11px}
+ .market-explore .culture-line{padding:16px 0;min-height:80px}
+ .market-explore .culture-reply{font-size:14px;line-height:1.95}
+ .market-explore .culture-questions{grid-template-columns:1fr;gap:8px}
+ .market-explore .culture-questions>button{min-height:47px;padding:10px 12px;font-size:16px}
+ .market-explore .culture-footer{margin-top:12px;padding-top:8px}
+ .market-explore .culture-footer button{font-size:13px}
+ .market-explore .culture-entry-collapsed{right:14px;left:14px;bottom:calc(235px + env(safe-area-inset-bottom));min-width:0;margin:0;padding:12px 16px}
+ .market-explore .explore-reopen{right:14px;bottom:calc(178px + env(safe-area-inset-bottom));font-size:17px!important}
+ .market-explore .explore-travel{left:50%;bottom:calc(202px + env(safe-area-inset-bottom));max-width:calc(100% - 28px);min-width:260px;padding:10px 18px;border-radius:18px}
+ .market-explore .explore-travel p{font-size:20px}
+ .market-explore .explore-turning{top:183px;max-width:calc(100% - 28px);padding:13px 18px;font-size:16px}
+ .market-explore .explore-toast{bottom:calc(194px + env(safe-area-inset-bottom));font-size:16px;padding:13px 18px}
+ .market-explore .explore-sources{padding:22px;max-height:86dvh;border-radius:22px}
+ .market-explore .explore-sources h2{font-size:27px}
+ .market-explore .explore-sources p{font-size:14px}
+ .market-explore .explore-sources h3{font-size:22px}
+ .market-explore .cover-header{left:20px;right:20px;top:max(20px,env(safe-area-inset-top))}
+ .market-explore .cover-header .explore-brand{padding:12px;min-height:64px;gap:10px;border-radius:17px}
+ .market-explore .cover-header .explore-brand>span{font-size:21px;letter-spacing:2px}
+ .market-explore .cover-header>button{padding:0 12px;min-height:44px;font-size:12px;border-radius:12px}
+ .market-explore .market-cover-art{object-position:63% center}
+ .market-explore .market-cover:after{background:linear-gradient(0deg,#edcea0 1%,#f2d7adf0 26%,#e7ba7969 56%,#a0682717 85%)}
+ .market-explore .cover-copy{left:27px;right:27px;max-width:none;bottom:90px}
+ .market-explore .cover-copy h1{font:clamp(40px,11vw,58px)/1.26 var(--amber-font);margin:20px 0 17px}
+ .market-explore .cover-eyebrow{font-size:12px;letter-spacing:2px}
+ .market-explore .cover-description{font:14px/2 'SimSun',serif}
+ .market-explore .cover-enter{min-height:54px;min-width:0;width:100%;margin:21px 0 17px;font-size:21px!important}
+ .market-explore .cover-notes{font-size:11px;letter-spacing:0}
+ .market-explore .cover-saved{font-size:12px}
+ .market-explore .cover-footer{left:27px;right:27px;bottom:25px;color:#795333}
+ .market-explore .cover-footer>span{font-size:14px;letter-spacing:1px}
+ .market-explore .cover-footer small{font-size:10px;margin-top:8px}
+}
+@media(max-width:380px){
+ .market-explore .explore-header{left:10px;right:10px;gap:7px}
+ .market-explore .explore-header .explore-brand{padding:10px;gap:8px}
+ .market-explore .explore-header .explore-brand>span{font-size:18px;letter-spacing:1px}
+ .market-explore .explore-toolbar{max-width:174px;width:174px;gap:6px}
+ .market-explore .explore-toolbar>button{padding:0 9px}
+ .market-explore .explore-location{max-width:calc(100% - 156px);padding-left:8px;gap:4px}
+ .market-explore .explore-location b{font-size:15px}
+ .market-explore .explore-location button{font-size:11px;padding:0 6px}
+ .market-explore .culture-entry>span{display:none}
+ .market-explore .culture-entry>.culture-entry-arrow{margin-left:auto}
+ .market-explore .morning-clock{padding-left:10px;padding-right:10px}
+ .market-explore .morning-clock-top>svg{display:none}
+ .market-explore .morning-clock-ticks{font-size:9px}
+}
+@media(min-width:761px) and (max-height:700px){
+ .market-explore .explore-header{top:16px}
+ .market-explore .explore-brand{min-height:65px;padding:10px 16px}
+ .market-explore .explore-brand>b{height:37px;width:31px;font-size:31px}
+ .market-explore .explore-brand>span{font-size:25px}
+ .market-explore .explore-toolbar{margin-top:7px}
+ .market-explore .basket-mobile-trigger,.market-explore .explore-location{top:99px}
+ .market-explore .explore-reading,.market-explore .culture-card{bottom:78px;max-height:calc(100dvh - 240px)}
+ .market-explore .explore-reading-top{padding-top:5px;padding-bottom:5px}
+ .market-explore .morning-clock{bottom:20px}
+ .market-explore .street-directory{top:99px;max-height:calc(100dvh - 200px)}
+ .market-explore .explore-basket{top:159px;bottom:26px}
+ .market-explore .walk-hud,.market-explore .explore-footer{display:none}
+ .market-explore .cover-copy{top:54%;max-width:55vw}
+ .market-explore .cover-copy h1{font-size:48px;margin:14px 0}
+ .market-explore .cover-description{font-size:14px}
+ .market-explore .cover-enter{margin:16px 0}
+}
+@media(max-width:760px) and (max-height:740px){
+ .market-explore .explore-reading{bottom:calc(149px + env(safe-area-inset-bottom));max-height:calc(100dvh - 328px)}
+ .market-explore .explore-reading-top{padding-top:0;padding-bottom:0}
+ .market-explore .explore-chapters{padding-top:7px}
+ .market-explore .explore-reading-footer{padding-top:4px;padding-bottom:4px}
+ .market-explore .culture-entry{margin-bottom:8px;min-height:44px}
+ .market-explore .walk-zoom{bottom:calc(137px + env(safe-area-inset-bottom))}
+ .market-explore[data-reading=true] .walk-zoom{display:none}
+ .market-explore .morning-clock,.market-explore[data-reading=true] .morning-clock,.market-explore[data-culture-open=true] .morning-clock{bottom:calc(19px + env(safe-area-inset-bottom))}
+ .market-explore .culture-card{bottom:151px;max-height:calc(100dvh - 328px)}
+ .market-explore .cover-copy{bottom:72px}
+ .market-explore .cover-copy h1{font-size:39px;margin:13px 0}
+ .market-explore .cover-description{font-size:13px;line-height:1.85}
+ .market-explore .cover-enter{margin:15px 0 12px}
+ .market-explore .cover-footer{bottom:18px}
+}
+@media(orientation:landscape) and (max-height:520px){
+ .market-explore .explore-header{top:10px;left:14px;right:14px}
+ .market-explore .explore-brand{min-height:54px;padding:7px 12px}
+ .market-explore .explore-brand>b{width:26px;height:32px;font-size:27px}
+ .market-explore .explore-brand>span{font-size:22px}
+ .market-explore .explore-brand small{display:none}
+ .market-explore .basket-mobile-trigger{top:78px;left:14px}
+ .market-explore .explore-location{display:none}
+ .market-explore .explore-reading,.market-explore .culture-card{left:auto;right:14px;bottom:15px;width:345px;max-height:calc(100dvh - 97px)}
+ .market-explore .explore-reading-top{min-height:44px;padding:0 12px 0 18px}
+ .market-explore .explore-chapters{padding-top:8px}
+ .market-explore .explore-reading-body{padding:12px 18px}
+ .market-explore .explore-reading-footer{padding:4px 12px}
+ .market-explore .culture-entry{min-height:44px;margin:0 18px 8px}
+ .market-explore .morning-clock,.market-explore[data-reading=true] .morning-clock,.market-explore[data-culture-open=true] .morning-clock{left:14px;right:auto;bottom:15px;translate:0;width:300px;max-width:calc(100% - 387px);padding:7px 12px 10px}
+ .market-explore .morning-clock-top>p,.market-explore .morning-clock-ticks small{display:none}
+ .market-explore .morning-clock-top>button{margin-left:auto}
+ .market-explore .morning-clock-top>div>span{font-size:17px}
+ .market-explore .morning-clock time{font-size:21px}
+ .market-explore .walk-hud,.market-explore .explore-footer,.market-explore .walk-zoom{display:none}
+ .market-explore .street-directory{top:77px;bottom:14px;max-height:none;right:14px;width:345px}
+ .market-explore .explore-basket{top:132px;bottom:14px;left:14px;width:310px}
+}
+@media(prefers-reduced-transparency:reduce){.market-explore{--amber-surface:#eed2a0;--amber-glass:linear-gradient(120deg,#fff0cf50,#e4ba7640)}}
+@media(prefers-reduced-motion:reduce){.market-explore *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

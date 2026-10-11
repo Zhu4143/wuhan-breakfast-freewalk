@@ -1,0 +1,64 @@
+/* Material only. The desktop and mobile layout rules keep their existing geometry. */
+.market-explore.sunlit-street,.market-explore.sunlit-street[data-era=present]{
+ --amber-glass:radial-gradient(ellipse at 90% 0,#fff3c94d,transparent 45%),radial-gradient(ellipse at 6% 100%,#fff1cc24,transparent 40%),linear-gradient(125deg,#fff4d833,#ffecc614 45%,#ffefd52b);
+ --amber-surface:#dbc49845;
+ --amber-shadow:inset 0 1px 1px #fff8e9a6,inset 0 -1px 1px #fff2d640,0 8px 26px #38271526;
+ --amber-active:linear-gradient(135deg,#e5b671ad,#99682ab8);
+ --ex-line:#fff4db80;--ex-ink:#493622;--ex-muted:#67513a;
+ --glass-blur:blur(22px) saturate(1.25);
+ --glass-panel:#49372587;--glass-ink:#fff8ed;--glass-muted:#f5e8d2;
+}
+.market-explore.sunlit-street .street-canvas canvas{filter:saturate(1.15) contrast(1.035)}
+.market-explore.sunlit-street :is(.explore-brand,.explore-toolbar>button,.explore-era,.basket-mobile-trigger,.explore-location,.explore-reopen,.explore-travel,.explore-turning,.explore-toast,.morning-clock,.walk-zoom button,.culture-entry-collapsed,.cover-header>button,.mobile-street-shortcuts button,.mobile-clock-trigger,.directory-photo-entry,.photo-board-pin){
+ background:var(--amber-glass),var(--amber-surface);
+ border-color:#fff4dfb3;box-shadow:var(--amber-shadow);
+ -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+}
+.market-explore.sunlit-street :is(.explore-reading,.explore-basket,.street-directory,.culture-card,.explore-sources,.photo-gallery){
+ --ex-ink:var(--glass-ink);--ex-muted:var(--glass-muted);--ex-accent:#ffdfac;
+ color:var(--ex-ink);background:var(--amber-glass),var(--glass-panel);
+ border-color:#fff4dfb3;box-shadow:var(--amber-shadow);
+ -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+ text-shadow:0 1px 2px #38271828;
+}
+.market-explore.sunlit-street .explore-brand{color:var(--glass-ink);background:var(--amber-glass),#654d3263}
+.market-explore.sunlit-street .explore-brand small{color:var(--glass-muted)}
+.market-explore.sunlit-street :is(.explore-reading h2,.culture-reply,.culture-heading h2,.basket-empty p,.basket-food b,.basket-poster b,.explore-place-list b,.photo-gallery-header h2,.photo-gallery-grid span,.studio-form legend,.studio-preview-heading h3){color:var(--ex-ink)}
+.market-explore.sunlit-street :is(.explore-copy,.explore-reading-top,.explore-eyebrow,.explore-add-food small,.explore-evidence>span,.explore-evidence button,.explore-reading-footer>span,.explore-inline-era span,.culture-entry>span,.basket-food small,.basket-heading p,.basket-bottom p,.basket-empty small,.directory-note,.street-directory>p,.explore-place-list small,.culture-heading span,.culture-footer,.culture-footer button,.culture-voice-note,.culture-questions small,.photo-gallery-header p,.photo-gallery-intro,.photo-gallery-footer p,.photo-gallery-grid small,.photo-gallery-grid em,.photo-gallery-detail figcaption,.studio-intro,.studio-form small){color:var(--ex-muted)}
+.market-explore.sunlit-street :is(.explore-reading-top,.explore-reading-footer,.culture-heading,.basket-heading,.basket-bottom,.photo-gallery-footer){border-color:#fff4db45}
+.market-explore.sunlit-street :is(.explore-reading-top,.culture-heading,.directory-heading,.basket-heading,.photo-gallery-header){background:transparent}
+.market-explore.sunlit-street :is(.street-directory,.directory-body,.culture-body,.explore-reading-body,.basket-items,.explore-sources,.photo-gallery,.studio-form){scrollbar-width:thin;scrollbar-color:#fff0cf70 transparent}
+.market-explore.sunlit-street .explore-reading-footer{background:#ffefcf08}
+.market-explore.sunlit-street :is(.explore-chapters button,.explore-inline-era button,.culture-entry,.culture-questions>button,.explore-place-list button,.explore-add-food,.basket-item,.explore-dialog-close,.photo-gallery button){background:#fff2d414;border-color:#fff4db75;color:var(--ex-ink);box-shadow:inset 0 1px 0 #fff4df20}
+.market-explore.sunlit-street :is(.explore-era button[aria-pressed=true],.explore-chapters button[aria-pressed=true],.explore-inline-era button[aria-pressed=true]){background:linear-gradient(130deg,#ffe6afcc,#e7b675a6);color:#8b4526;border-color:#fff3d2;box-shadow:inset 0 1px 2px #fff8e4a0}
+.market-explore.sunlit-street :is(.explore-reading-footer button:last-child,.basket-download,.photo-gallery .photo-gallery-create>button,.photo-gallery .studio-generate){background:var(--amber-active);color:#fff7e9;border-color:#fff4da99;box-shadow:inset 0 1px 0 #ffeac945}
+.market-explore.sunlit-street :is(.explore-reading-top button,.basket-close,.street-directory>div:first-child>button){background:#fff5de1f;color:var(--ex-ink);border:1px solid #fff4db80}
+.market-explore.sunlit-street .explore-add-food i{background:#fff2d6b5;color:#76502e;border-color:#fff4dfb3;box-shadow:inset 0 1px 2px #fffaf0b3}
+.market-explore.sunlit-street .explore-add-food:disabled{opacity:1!important}
+.market-explore.sunlit-street .basket-mobile-trigger b{background:#fff3d294;box-shadow:none}
+.market-explore.sunlit-street .explore-location button{background:#fff1d521;border-color:#fff0d440;color:#914e2c}
+.market-explore.sunlit-street .morning-clock{color:var(--glass-ink);background:var(--amber-glass),#7656315e}
+.market-explore.sunlit-street :is(.morning-clock-top>p,.morning-clock-ticks){color:#fff2da}
+.market-explore.sunlit-street .morning-clock-top>button{background:#fff3da1c;color:#fff4df;border:1px solid #fff4dbb3}
+.market-explore.sunlit-street .morning-clock time{color:#a84625;text-shadow:0 1px 1px #fff2ce40}
+.market-explore.sunlit-street .morning-track:before{border-color:#fff4df9e;box-shadow:none}
+.market-explore.sunlit-street .morning-clock-ticks small{color:#ffebcf}
+.market-explore.sunlit-street .walk-joystick{background:radial-gradient(circle,#fff1cc2e 54%,#c9a26445 55%);border-color:#fff4dbc4;box-shadow:var(--amber-shadow);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+.market-explore.sunlit-street .walk-joystick i{background:linear-gradient(130deg,#ead3a78c,#a47e4a7d);box-shadow:inset 0 1px 2px #fff6db99,0 3px 8px #46341b25}
+.market-explore.sunlit-street .basket-remove,.market-explore.sunlit-street .basket-poster-actions .basket-poster-remove{color:#ffdfb0!important}
+.market-explore.sunlit-street .culture-questions>button[aria-pressed=true]{color:#fff6e6;background:#ecbd7940}
+.market-explore.sunlit-street .explore-sources section>small{color:#ffdfac}
+.market-explore.sunlit-street :is(.photo-gallery-create,.studio-upload,.studio-tones label,.studio-foods label){background:#fff2d416;border-color:#fff4db75;color:var(--ex-ink)}
+.market-explore.sunlit-street :is(.studio-tones label,.studio-foods label)[data-selected=true]{background:#e6b97a40;border-color:#ffe6b9;box-shadow:inset 0 1px 0 #fff5d940}
+.market-explore.sunlit-street :is(.studio-form legend>span,.studio-place>span,.studio-foods i){color:#ffe0ad}
+.market-explore.sunlit-street .photo-gallery .studio-make{background:var(--amber-active);color:#fff7e9;border-color:#fff4da99}
+.market-explore.sunlit-street :is(.studio-place input,.studio-form select){background:#49372569;border-color:#fff4db80;color:var(--ex-ink)}
+.market-explore.sunlit-street .studio-place input::placeholder{color:#f5e8d2a6}
+@media(max-width:760px),(orientation:landscape) and (max-height:520px) and (max-width:1000px){
+ .market-explore.sunlit-street .explore-toolbar{background:var(--amber-glass),#ad906267;border-color:#fff4dfb3;-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ .market-explore.sunlit-street{--amber-surface:#e0cba1ed;--glass-panel:#6d5640f2}
+ .market-explore.sunlit-street .explore-brand{background:#735d44f2}
+ .market-explore.sunlit-street .morning-clock{background:#8b6c48f2}
+}

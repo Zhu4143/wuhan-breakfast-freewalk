@@ -2,6 +2,7 @@ import * as T from 'three';
 import {PaperWorkshop} from '../atelier/PaperWorkshop';
 import {shopPlots} from './layout';
 import {clampMorning,shopOpening,smooth} from './marketTime';
+import {StreetSunlight} from './StreetSunlight';
 
 type Lamp={group:T.Group;old:T.Group;today:T.Group;bulb:T.MeshStandardMaterial;light:T.PointLight;halo:T.ShaderMaterial;pool:T.ShaderMaterial};
 type Door={id:string;old:T.Group;today:T.Group;leaves:T.Group[]};
@@ -13,10 +14,12 @@ export class MarketAtmosphere{
  private lamps:Lamp[]=[];private doors:Door[]=[];
  private hemi:T.HemisphereLight[]=[];private fill:T.DirectionalLight[]=[];
  private lastProgress=-1;private lastEra=-1;
+ private sunlight:StreetSunlight;
  constructor(private scene:T.Scene,private sun:T.DirectionalLight,private renderer:T.WebGLRenderer,
   private sky:T.Mesh,private disc:T.Mesh,private glow:T.Mesh,w:PaperWorkshop,sockets:Map<string,T.Group>){
   this.root.name='morning-lamps-and-opening-doors';this.root.userData.animationRoot=true;scene.add(this.root);
   scene.children.forEach(o=>{if(o instanceof T.HemisphereLight)this.hemi.push(o);if(o instanceof T.DirectionalLight&&o!==sun)this.fill.push(o);});
+  this.sunlight=new StreetSunlight(w,this.root);
   for(const plot of shopPlots){
    // The frontage runs along Z. Stand in the gap beyond its edge, clear of the shop.
    const lampZ=plot.z+plot.width/2+.8;
@@ -72,7 +75,7 @@ export class MarketAtmosphere{
   w.batchStatic(today);w.batchScenery(today);
   this.doors.push({id,old,today,leaves});
  }
- update(progress:number,era:number){
+ update(progress:number,era:number,atShop?:(id:string)=>number){
   progress=clampMorning(progress);era=clampMorning(era);
   if(Math.abs(progress-this.lastProgress)<.00005&&Math.abs(era-this.lastEra)<.0001)return;
   this.lastProgress=progress;this.lastEra=era;
@@ -80,25 +83,28 @@ export class MarketAtmosphere{
   const skyTint=mix('#60738e','#fff9e7',day).lerp(new T.Color('#f8c391'),warm*.15).lerp(new T.Color('#c2e4e5'),era*.10);
   (this.sky.material as T.MeshBasicMaterial).color.copy(skyTint);
   this.scene.fog!.color.copy(mix('#515e76','#e4e7d2',day).lerp(new T.Color('#b8d0cb'),era*.16));
-  const y=4+progress*25;this.sun.position.set(12,y,-58);
-  this.sun.intensity=.10+day*3.5;this.sun.color.copy(mix('#ed9d6a','#fff1cd',day).lerp(new T.Color('#f0f7eb'),era*.15));
-  this.disc.position.set(12,y,-58);this.glow.position.set(12,y,-57.8);
+  // A stronger side light and quieter cool fill keep the whole lane dimensional.
+  const y=5+progress*33;this.sun.position.set(32,y,-48);
+  this.sun.intensity=.10+day*4.5;this.sun.color.copy(mix('#ed9d6a','#ffe1ac',day).lerp(new T.Color('#fff0cb'),era*.12));
+  this.sunlight.update(progress,this.sun);
+  this.disc.position.set(32,y,-48);this.glow.position.set(32,y,-47.8);
   const sunMaterial=this.disc.material as T.MeshBasicMaterial;sunMaterial.color.copy(mix('#c97e5f','#fff0c4',day));
   (this.glow.material as T.ShaderMaterial).uniforms.strength.value=.08+warm*.24;
-  for(const hemi of this.hemi){hemi.intensity=.28+day*.62;hemi.color.copy(mix('#839abb','#e4eee5',day));hemi.groundColor.copy(mix('#605c73','#d2bfa0',day));}
-  for(const fill of this.fill){fill.intensity=.13+day*.45;fill.color.copy(mix('#7f9fc8','#e4e8da',day));}
-  this.scene.environmentIntensity=.05+day*.19;this.renderer.toneMappingExposure=.80+day*.14;
+  for(const hemi of this.hemi){hemi.intensity=.24+day*.34;hemi.color.copy(mix('#839abb','#cce5ef',day));hemi.groundColor.copy(mix('#605c73','#b99a72',day));}
+  for(const fill of this.fill){fill.position.set(-24,14,18);fill.intensity=.13+day*1.25;fill.color.copy(mix('#7f9fc8','#f6e9d2',day));}
+  this.scene.environmentIntensity=.05+day*.17;this.renderer.toneMappingExposure=.80+day*.30;
   const glow=1-smooth((progress-.14)/.46);
-  for(const lamp of this.lamps){
-   lamp.old.visible=era<.5;lamp.today.visible=era>=.5;
-   const tint=mix('#ffc074','#ecf1cb',era);lamp.light.color.copy(tint);lamp.light.intensity=glow*(24+era*5);
+  for(const [index,lamp] of this.lamps.entries()){
+   const local=atShop?.(shopPlots[index].id)??era;
+   lamp.old.visible=local<.5;lamp.today.visible=local>=.5;
+   const tint=mix('#ffc074','#ecf1cb',local);lamp.light.color.copy(tint);lamp.light.intensity=glow*(24+local*5);
    lamp.bulb.emissive.copy(tint);lamp.bulb.emissiveIntensity=.12+glow*3.1;
    lamp.halo.uniforms.strength.value=glow*.043;lamp.pool.uniforms.strength.value=glow*.18;
    lamp.halo.uniforms.tint.value.copy(tint);lamp.pool.uniforms.tint.value.copy(tint);
   }
   for(const door of this.doors){
-   const open=shopOpening(door.id,progress);
-   door.old.visible=era<.5&&open<.999;door.today.visible=era>=.5&&open<.999;
+   const open=shopOpening(door.id,progress),local=atShop?.(door.id)??era;
+   door.old.visible=local<.5&&open<.999;door.today.visible=local>=.5&&open<.999;
    door.leaves.forEach((leaf,i)=>leaf.rotation.y=(i===0?1:-1)*open*1.48);
    // Keep the opening notice with the folding surface, not floating over an open shop.
    for(const child of door.old.children)if(!door.leaves.includes(child as T.Group))child.visible=open<.25;
@@ -106,5 +112,5 @@ export class MarketAtmosphere{
    door.old.userData.opening=open;door.today.userData.opening=open;
   }
  }
- dispose(){this.root.removeFromParent();for(const door of this.doors){door.old.removeFromParent();door.today.removeFromParent();}}
+ dispose(){this.sunlight.dispose();this.root.removeFromParent();for(const door of this.doors){door.old.removeFromParent();door.today.removeFromParent();}}
 }

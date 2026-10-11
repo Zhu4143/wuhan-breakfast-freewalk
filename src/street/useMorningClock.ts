@@ -1,12 +1,15 @@
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef} from 'react';
 import {advanceMorning,clampMorning} from './marketTime';
+import {usePreviewState,previewIsDriver} from '../preview/previewBridge';
 
 export function useMorningClock(active:boolean){
- const [progress,setProgress]=useState(0),[paused,setPaused]=useState(false);
+ const [progress,setProgress]=usePreviewState('clock.progress',0),[paused,setPaused]=usePreviewState('clock.paused',false);
  const value=useRef(0),last=useRef(0);
+ value.current=progress;
  useEffect(()=>{
   last.current=performance.now();
   const tick=()=>{const now=performance.now(),elapsed=(now-last.current)/1000;last.current=now;
+   if(!previewIsDriver())return;
    value.current=advanceMorning(value.current,elapsed,active&&!paused&&!document.hidden);setProgress(value.current);
   };
   // Account for visible dwell time, including slow frames; a hidden tab adds no time.

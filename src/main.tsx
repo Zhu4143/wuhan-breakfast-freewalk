@@ -6,5 +6,7 @@ const Atelier=lazy(()=>import('./atelier/NoodleAtelier'));
 const Classic=lazy(()=>import('./app/ClassicExperience'));
 const Street=lazy(()=>import('./street/StreetExperience'));
 const Tour=lazy(()=>import('./street/ExploreExperience'));
+const DualPreview=lazy(()=>import('./preview/DualPreview'));
 const sample=new URLSearchParams(location.search).get('sample');
-createRoot(document.getElementById('root')!).render(<React.StrictMode><Suspense fallback={<p style={{padding:40}}>清晨正在展开……</p>}>{sample==='classic'?<Classic/>:sample==='street'?<Street/>:sample==='noodle'?<Atelier/>:<Tour/>}</Suspense></React.StrictMode>);
+const dualPreview=new URLSearchParams(location.search).get('preview')==='dual';
+createRoot(document.getElementById('root')!).render(<React.StrictMode><Suspense fallback={<p style={{padding:40}}>清晨正在展开……</p>}>{dualPreview?<DualPreview/>:sample==='classic'?<Classic/>:sample==='street'?<Street/>:sample==='noodle'?<Atelier/>:<Tour/>}</Suspense></React.StrictMode>);

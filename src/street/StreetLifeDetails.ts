@@ -3,6 +3,7 @@ import {PaperWorkshop} from '../atelier/PaperWorkshop';
 import {makeSteam} from '../atelier/Steam';
 import {flowerPot} from './Neighborhood';
 import type {StreetMoment} from './moments';
+import {photoZines,photoZineAsset} from './photoZines';
 
 const V=(x:number,y:number,z:number)=>new T.Vector3(x,y,z);
 type Leaves={mesh:T.InstancedMesh;origins:T.Vector3[]};
@@ -15,6 +16,8 @@ export class StreetLifeDetails{
   private curtains:T.Group[]=[];
   private scale:T.Group|null=null;
   private leaves:Leaves|null=null;
+  private disposed=false;
+  photoCount=0;
   readonly corners=new Map<StreetMoment,T.Group>();
   constructor(private w:PaperWorkshop,private parent:T.Group){
     this.teaCorner();this.marketDetails();this.noticeBoard();this.pavement();
@@ -112,14 +115,20 @@ export class StreetLifeDetails{
     for(const x of [-1.12,1.12])w.box(g,[.07,2.0,.08],[x,2.4,.08],'#84765c','wood');
     for(const y of [1.43,3.38])w.box(g,[2.32,.08,.18],[0,y,.08],'#8c795a','wood');
     const top=w.box(g,[2.53,.085,.55],[0,3.48,0],'#88a39b');top.rotation.x=.2;
-    const {past,present}=this.eraPair(g);
-    const notes=[['修伞\n补鞋','旧物\n修补',-.55,2.70,.66,.73,-.08],['借书角','借书角',.52,2.83,.72,.39,.06],['钥匙\n招领','街巷\n散步',.52,2.21,.65,.62,-.04],['街坊留言','周末换书',-.50,1.98,.70,.34,.04]] as const;
-    for(const [old,now,x,y,width,height,rotation] of notes){
-      for(const [parent,text] of [[past,old],[present,now]] as const){
-        const note=w.sign(parent,text,width,height,[x,y,.086],parent===past?'#e4d1a3':'#dde3ca','#6e7760');note.rotation.z=rotation;
-        w.mesh(parent,new T.SphereGeometry(.026,8,5),w.material('#a56e54'),[x,y+height*.42,.123]);
-      }
-    }
+    const exhibition=new T.Group();exhibition.name='street-photo-zines';exhibition.userData.animationRoot=true;g.add(exhibition);
+    photoZines.forEach((item,index)=>{
+      const paper=new T.Group();paper.position.set((index%3-1)*.69,index<3?2.90:2.00,.09);paper.rotation.z=[-.025,.018,-.015,.02,-.015,.025][index];exhibition.add(paper);
+      const placeholder=w.sign(paper,'0'+(index+1),.48,.8,[0,0,0],'#efe5cd','#9c967a');
+      w.mesh(paper,new T.SphereGeometry(.019,8,5),w.material('#a56e54'),[0,.375,.018]);
+      const image=new Image();image.src=photoZineAsset(item.id,true);
+      // The street opens independently; a late decode cannot revive disposed scene resources.
+      void image.decode().then(()=>{
+        if(this.disposed)return;
+        const print=w.print(paper,image,.48,.8,[0,0,.004]);print.name='photo-zine-'+item.id;print.castShadow=false;
+        paper.remove(placeholder);this.photoCount++;
+      }).catch(()=>{/* The numbered paper remains if a thumbnail fails. */});
+    });
+    w.sign(exhibition,'街坊影笺 · 照片再创作',1.76,.17,[0,1.25,.08],'#e6dbc1','#6e7760');
     flowerPot(w,g,-1.35,.05,.28,1.45);flowerPot(w,g,1.36,.05,.30,.8);
   }
   balconies(sockets:Map<string,T.Group>){
@@ -169,12 +178,13 @@ export class StreetLifeDetails{
       for(let j=0;j<3;j++){const grass=w.shape(this.parent,[[0,0],[-.025,.12+j*.035],[.015,.08],[.03,0]],[x,.048,z],i%2?'#8f9e7d':'#a8ae80',.004);grass.rotation.y=j*1.04;}
     }
   }
-  update(time:number,camera:T.Camera,turn:number){
+  update(time:number,camera:T.Camera,turn:number,atPosition?:(x:number,z:number)=>number){
     const angle=T.MathUtils.clamp(turn,0,1)*Math.PI;
-    for(const f of this.flips){f.past.visible=turn<.5;f.present.visible=turn>=.5;f.past.rotation.y=angle;f.present.rotation.y=angle-Math.PI;}
+    for(const f of this.flips){const position=f.past.getWorldPosition(new T.Vector3()),local=atPosition?.(position.x,position.z)??turn;f.past.visible=local<.5;f.present.visible=local>=.5;f.past.rotation.y=local*Math.PI;f.present.rotation.y=(local-1)*Math.PI;}
     this.steam.forEach(s=>{s.update(time,camera,true);s.meshes.forEach(m=>m.material.uniforms.strength.value=.32*Math.pow(Math.abs(Math.cos(angle)),4));});
     if(this.scale)this.scale.rotation.z=Math.sin(time*.65)*.022;
     this.curtains.forEach((g,i)=>g.rotation.x=Math.sin(time*.47+i)*.018);
     if(this.leaves){const m=new T.Matrix4(),q=new T.Quaternion(),p=new T.Vector3();this.leaves.origins.forEach((origin,i)=>{p.copy(origin);if(i%13===0){p.z+=Math.sin(time*.26+i)*.12;p.y+=Math.max(0,Math.sin(time*.26+i))*.018;}q.setFromAxisAngle(V(0,1,0),i*2.39);m.compose(p,q,V(1,1,1));this.leaves!.mesh.setMatrixAt(i,m);});this.leaves.mesh.instanceMatrix.needsUpdate=true;}
   }
+  dispose(){this.disposed=true;}
 }

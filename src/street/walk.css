@@ -8,6 +8,8 @@
 .street-directory>div:first-child{display:flex;justify-content:space-between;align-items:center}.street-directory h2{font:25px "KaiTi",serif;margin:0}.street-directory>p{font-size:12px;color:var(--ex-muted)}.street-directory>div>button{font-size:24px;min-width:28px}
 .walk-hud{position:absolute;bottom:35px;left:50%;transform:translateX(-50%);z-index:5;text-align:center;pointer-events:none;background:#f5efdfed;border:1px solid #9aaa8e77;border-radius:17px;padding:10px 20px;white-space:nowrap;color:#426653}.walk-hud p{font:12px "Microsoft YaHei",sans-serif;letter-spacing:1px;margin:0 0 5px}.walk-hud>span{font:11px "KaiTi",serif;color:#8a8765}
 .walk-mobile,.walk-joystick{display:none}.walk-zoom{position:absolute;bottom:42px;right:27px;z-index:8;display:flex;gap:4px}.walk-zoom button{width:39px;height:39px;background:#f6efdfeb;border:1px solid var(--ex-line);border-radius:13px;font-size:22px!important}
+/* The chrome lets pointers through to the street; its active joystick must opt back in. */
+.market-explore .walk-joystick:not(.is-disabled){pointer-events:auto}
 .explore-pin{max-width:155px}.explore-pin span{overflow:hidden;text-overflow:ellipsis}.explore-pin small{font-size:9px}.market-explore .explore-travel{bottom:109px;left:50%}
 @media(max-width:760px){
  .market-explore .basket-mobile-trigger{top:92px;left:12px;font-size:14px!important;min-height:36px}.market-explore .explore-location{left:12px;top:139px}.market-explore .explore-basket{top:139px;bottom:152px}

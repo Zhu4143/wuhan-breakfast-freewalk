@@ -20,7 +20,7 @@ import {BreakfastKitchen} from './BreakfastKitchen';
 import {breakfastShops} from './breakfastShops';
 import type {ShopModule} from './ShopModule';
 import {addStreetPatina} from './StreetPatina';
-import {FreeWalk} from './FreeWalk';
+import {FreeWalk,type PreviewWalkPose} from './FreeWalk';
 import {AgedPaving} from './AgedPaving';
 import {StreetEras} from './StreetEras';
 import {bodySegmentClear,type WalkObstacle} from './walkNavigation';
@@ -29,12 +29,15 @@ import {clampMorning,openShopCount,pedestrianPresence,morningTime} from './marke
 import type {MarketSoundscape} from './MarketSoundscape';
 import {BicyclePass} from './BicyclePass';
 import {pedestrianProfiles} from './pedestrianProfiles';
+import {photoBoardAnchor} from './photoZines';
+import {dominoDuration,eraShopOrder,shopEraFrame,nearestEraShop} from './eraDomino';
 
 const V=(x:number,y:number,z:number)=>new T.Vector3(x,y,z);
 type Pedestrian={group:T.Group;print:T.Mesh;prints:T.Mesh[];materials:T.Material[];presence:number;start:T.Vector3;end:T.Vector3;phase:number;speed:number;moving:boolean;radius:number;time:number;};
 
 export class MorningStreet implements SceneExtension{
   readonly illustrated=true;
+  readonly eraSequence={duration:dominoDuration,frame:(progress:number)=>shopEraFrame('noodle',progress)};
   readonly scenery=new T.Group();readonly planning=new T.Group();readonly sockets=new Map<string,T.Group>();
   private disposed=false;private shop!:T.Group;private scene!:T.Scene;private sun!:T.DirectionalLight;
   private sky:T.Mesh|null=null;private sunDisc:T.Mesh|null=null;private sunGlow:T.Mesh|null=null;
@@ -48,6 +51,7 @@ export class MorningStreet implements SceneExtension{
   private walk:FirstPersonWalk|null=null;private rays:MorningRays|null=null;
   private dawnTween:gsap.core.Tween|null=null;
   private walkMap=false;private explorerMarkers=new Map<PlaceId,HTMLButtonElement>();
+  private photoBoardMarker:HTMLButtonElement|null=null;
   private foodStalls:FoodStalls|null=null;
   private shops=new Map<string,ShopModule>();
   private free:FreeWalk|null=null;private paving:AgedPaving|null=null;private eras:StreetEras|null=null;private markerEnabled=false;
@@ -67,12 +71,16 @@ export class MorningStreet implements SceneExtension{
   joystick(x:number,y:number){this.free?.joystick(x,y);}
   zoom(delta:number){this.free?.zoom(delta);}
   cancelWalk(){this.free?.cancel();}
+  setPreviewFollower(value:boolean){this.free?.setPreviewFollower(value);}
+  get previewPose(){return this.free?.previewPose??null;}
+  applyPreviewPose(value:PreviewWalkPose){this.free?.applyPreviewPose(value);}
   beforeFrame(dt:number){this.frameDt=Math.min(Math.max(dt,0),1);if(this.morning)this.dawn=T.MathUtils.damp(this.dawn,this.morningTarget,4,this.frameDt);this.free?.update(dt);}
   setMarketTime(progress:number){this.morningTarget=clampMorning(progress);}
   constructor(private host:HTMLDivElement,private onTravel?:(moving:boolean)=>void){if(onTravel)this.walk=new FirstPersonWalk(onTravel);}
   walkTo(index:number,animate:boolean,custom?:TourStop){if(this.free&&custom)this.free.go(custom);else this.walk?.go(index,animate,custom);}
   setWalkMap(value:boolean){this.walkMap=value;this.host.dataset.walkMode=this.free?'first-person':value?'map':'first-person';}
   setExplorerMarkers(markers:Map<PlaceId,HTMLButtonElement>){this.explorerMarkers=markers;}
+  setPhotoBoardMarker(marker:HTMLButtonElement|null){this.photoBoardMarker=marker;}
   speakAtShop(id:PlaceId){this.shops.get(id)?.speak();}
   finishWalk(){this.walk?.finish();this.dawnTween?.progress(1);}
   configure(scene:T.Scene,renderer:T.WebGLRenderer,camera:T.PerspectiveCamera,shop:T.Group){
@@ -379,12 +387,21 @@ export class MorningStreet implements SceneExtension{
     return {position,target};
   }
   update(time:number,camera:T.PerspectiveCamera,turn:number,motion=true){
-    this.eraProgress=turn;this.morning?.update(this.dawn,turn);
+    this.eraProgress=turn;
+    const frames=new Map<string,ReturnType<typeof shopEraFrame>>(eraShopOrder.map(id=>[id,shopEraFrame(id,turn)]));
+    const localEra=(id:string)=>frames.get(id)!.furniture;
+    const atPosition=(x:number,z:number)=>localEra(nearestEraShop(x,z));
+    const ambientEra=eraShopOrder.reduce((sum,id)=>sum+frames.get(id)!.turn,0)/eraShopOrder.length;
+    this.morning?.update(this.dawn,ambientEra,localEra);
     if(this.morning){this.host.dataset.morningProgress=this.dawn.toFixed(4);this.host.dataset.marketClock=morningTime(this.dawn);this.host.dataset.openShops=String(openShopCount(this.dawn));this.host.dataset.dawn=this.dawn.toFixed(3);this.host.dataset.sunHeight=this.sun.position.y.toFixed(2);}
-    this.foodStalls?.update(time,camera,turn);this.eras?.update(turn);this.paving?.update(turn);
+    const mianwo=frames.get('mianwo')!;
+    this.foodStalls?.update(time,camera,mianwo.turn,mianwo);this.eras?.update(turn,atPosition);this.paving?.update(turn,eraShopOrder.map(localEra));
     if(this.morning)this.eras?.updateMorning(this.dawn);
-    this.host.dataset.wholeStreetEra=turn>=.5?'present':'past';this.host.dataset.pedestrianEra=turn>=.5?'present':'past';
-    this.shops.forEach(shop=>{shop.setEraProgress(turn);shop.update(time,camera,motion);});
+    this.host.dataset.wholeStreetEra=turn===0?'past':turn===1?'present':'changing';this.host.dataset.pedestrianEra=this.host.dataset.wholeStreetEra;
+    this.host.dataset.shopEraProgress=eraShopOrder.map(id=>frames.get(id)!.turn.toFixed(3)).join(',');
+    this.host.dataset.shopEraPhases=JSON.stringify(eraShopOrder.map(id=>({id,...frames.get(id)!})));
+    this.host.dataset.eraOrder=eraShopOrder.join(',');
+    this.shops.forEach(shop=>{const frame=frames.get(shop.id)!;shop.setEraProgress(frame.turn,frame);shop.update(time,camera,motion);});
     const bounds=this.host.getBoundingClientRect();
     const occupied:{x:number;y:number}[]=[];
     this.explorerMarkers.forEach((button,id)=>{
@@ -403,7 +420,13 @@ export class MorningStreet implements SceneExtension{
       button.style.transform='translate('+x+'px,'+y+'px) translate(-50%,-50%)';
       button.dataset.distance=distance.toFixed(1);
     });
-    this.life?.update(time,camera,turn);this.host.dataset.streetTurn=turn.toFixed(3);
+    if(this.photoBoardMarker){
+      const anchor=new T.Vector3(...photoBoardAnchor),distance=anchor.distanceTo(camera.position),point=anchor.project(camera),button=this.photoBoardMarker;
+      button.hidden=!this.markerEnabled||distance>35||point.z<0||point.z>1||Math.abs(point.x)>.84||Math.abs(point.y)>.72;
+      button.style.transform='translate('+((point.x*.5+.5)*bounds.width)+'px,'+((-point.y*.5+.5)*bounds.height)+'px) translate(-50%,-50%)';
+    }
+    this.host.dataset.photoBoardCount=String(this.life?.photoCount??0);
+    this.life?.update(time,camera,ambientEra,atPosition);this.host.dataset.streetTurn=turn.toFixed(3);
     this.rays?.update(time,this.dawn);
     if(this.free||this.walk){const state=this.free?.state??this.walk!.state;this.host.dataset.walkStop=state.stop;this.host.dataset.walking=String(state.moving);this.host.dataset.eyeHeight=state.eye.toFixed(3);if(this.free){this.host.dataset.walkMode='first-person';this.host.dataset.walkYaw=this.free.state.yaw.toFixed(3);this.host.dataset.walkPitch=this.free.state.pitch.toFixed(3);this.host.dataset.walkFov=this.free.state.fov.toFixed(1);}}
     this.sunDisc?.quaternion.copy(camera.quaternion);this.sunGlow?.quaternion.copy(camera.quaternion);
@@ -429,21 +452,22 @@ export class MorningStreet implements SceneExtension{
       if(!p.moving||bodySegmentClear(p.group.position,next,nearby,p.radius)){p.time=nextTime;p.group.position.copy(next);}
       p.group.position.y=p.moving?Math.abs(Math.sin(p.time*2.25+i))*.018:0;
       p.group.rotation.y=Math.atan2(camera.position.x-p.group.position.x,camera.position.z-p.group.position.z)*.78;
-      p.prints.forEach((print,era)=>{print.visible=turn<.5?era===0:era===1;print.rotation.z=Math.sin(time*(p.moving?2.25:.55)+i)*(p.moving?.012:.004);print.rotation.y=turn<.5?turn*Math.PI:(turn-1)*Math.PI;});
+      const personEra=frames.get(nearestEraShop(p.group.position.x,p.group.position.z))!.keeper;
+      p.prints.forEach((print,era)=>{print.visible=personEra<.5?era===0:era===1;print.rotation.z=Math.sin(time*(p.moving?2.25:.55)+i)*(p.moving?.012:.004);print.rotation.y=(personEra<.5?personEra:personEra-1)*Math.PI;});
     });
     this.host.dataset.activePeople=String(this.people.filter(p=>p.group.visible).length);
     if(this.bicyclePass){
       const obstacles=this.navigationObstacles().filter(o=>o.id!=='passing-old-bicycle');if(this.free)obstacles.push({id:'viewer',x:this.free.position.x,z:this.free.position.z,radius:.40});
-      this.bicyclePass.update(this.frameDt,this.dawn,turn,motion,this.experienceActive,camera,obstacles);
+      this.bicyclePass.update(this.frameDt,this.dawn,atPosition(this.bicyclePass.root.position.x,this.bicyclePass.root.position.z),motion,this.experienceActive,camera,obstacles);
       this.host.dataset.bicycleVisible=String(this.bicyclePass.root.visible);this.host.dataset.bicycleMoving=String(this.bicyclePass.cue?.moving??false);this.host.dataset.bicycleTime=(this.bicyclePass.cue?.elapsed??0).toFixed(3);
     }
     const right=camera.matrixWorld.elements;
-    this.soundscape?.update({progress:this.dawn,era:turn,camera:{position:camera.position,right:{x:right[0],y:right[1],z:right[2]}},bicycle:this.bicyclePass?.cue??null});
+    this.soundscape?.update({progress:this.dawn,era:atPosition(camera.position.x,camera.position.z),camera:{position:camera.position,right:{x:right[0],y:right[1],z:right[2]}},bicycle:this.bicyclePass?.cue??null});
     if(this.dust)(this.dust.material as T.ShaderMaterial).uniforms.time.value=time;
     if(this.marker){const point=V(-5.6,3.0,5.6).project(camera);const b=this.host.getBoundingClientRect();this.marker.style.transform=`translate(${(point.x*.5+.5)*b.width}px,${(-point.y*.5+.5)*b.height}px) translate(-50%,-50%)`;this.marker.hidden=!!this.moment||this.shopOverview||this.activeDetail!=='welcome'||this.viewId==='plan'||point.z<0||point.z>1||Math.abs(point.x)>.94||Math.abs(point.y)>.82;}
     this.host.dataset.pedestrianZ=this.people[0]?.group.position.z.toFixed(3)??'';this.host.dataset.streetTime=time.toFixed(2);
   }
-  dispose(){this.disposed=true;this.free?.dispose();this.walk?.dispose();this.dawnTween?.kill();this.morning?.dispose();this.bicyclePass?.dispose();this.soundscape?.dispose();this.shops.forEach(shop=>shop.dispose());this.shops.clear();this.scene.remove(this.scenery,this.planning);this.marker=null;}
+  dispose(){this.disposed=true;this.life?.dispose();if(this.photoBoardMarker)this.photoBoardMarker.hidden=true;this.photoBoardMarker=null;this.free?.dispose();this.walk?.dispose();this.dawnTween?.kill();this.morning?.dispose();this.bicyclePass?.dispose();this.soundscape?.dispose();this.shops.forEach(shop=>shop.dispose());this.shops.clear();this.scene.remove(this.scenery,this.planning);this.marker=null;}
 }
 
 

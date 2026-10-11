@@ -2,27 +2,31 @@ import * as T from 'three';
 import {PaperWorkshop} from '../atelier/PaperWorkshop';
 import {bicycle} from './StreetProps';
 import {shopOpening} from './marketTime';
+import {nearestEraShop} from './eraDomino';
 
-type Pair={past:T.Group;present:T.Group};
-/** Building maintenance, everyday objects and local material changes share one era clock. */
+type Pair={past:T.Group;present:T.Group;x:number;z:number};
+/** Building repairs and objects follow the era wave at their own street position. */
 export class StreetEras{
  private pairs:Pair[]=[];
- private colors:{mat:T.MeshStandardMaterial;old:T.Color;now:T.Color}[]=[];
+ private colors:{mat:T.MeshStandardMaterial;old:T.Color;now:T.Color;x:number;z:number}[]=[];
  private shutters:T.Group[]=[];
  private progress=-1;
  private morningDoors:{id:string;past:T.Object3D;present:T.Group}[]=[];
  constructor(private w:PaperWorkshop,root:T.Group,sockets:Map<string,T.Group>){
-  const materialCopies=new Map<T.Material,T.Material>();
+  root.updateWorldMatrix(true,true);
+  const materialCopies=new Map<string,Map<T.Material,T.Material>>();
   const visit=(o:T.Object3D)=>{
    if(o.name==='doupi-complete-shop'||o.name.startsWith('breakfast-kitchen-')||o.name.startsWith('food-stall-')||o.name.startsWith('pedestrian-'))return;
-   if(o instanceof T.Mesh){const convert=(m:T.Material)=>{
+   if(o instanceof T.Mesh){const position=o.getWorldPosition(new T.Vector3()),zone=nearestEraShop(position.x,position.z);
+    let copies=materialCopies.get(zone);if(!copies){copies=new Map();materialCopies.set(zone,copies);}
+    const convert=(m:T.Material)=>{
     if(!(m instanceof T.MeshStandardMaterial))return m;
-    let copy=materialCopies.get(m);if(copy)return copy;
+    let copy=copies.get(m);if(copy)return copy;
     const c=this.w.ownMaterial(m.clone());c.onBeforeCompile=m.onBeforeCompile;c.customProgramCacheKey=m.customProgramCacheKey;
     const old=c.color.clone(),now=old.clone();
     if(c.map)now.multiply(new T.Color('#e7f1e9'));
     else {const hsl={h:0,s:0,l:0};old.getHSL(hsl);now.setHSL(hsl.h<.2?hsl.h+.025:hsl.h,Math.max(.08,hsl.s*.72),Math.min(.86,hsl.l+.10));}
-    this.colors.push({mat:c,old,now});materialCopies.set(m,c);return c;
+    this.colors.push({mat:c,old,now,x:position.x,z:position.z});copies.set(m,c);return c;
    };o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);}
    o.children.forEach(visit);
   };visit(root);
@@ -72,30 +76,30 @@ export class StreetEras{
    }
    for(const g of [past,present]){w.batchStatic(g);w.batchScenery(g);}
   });
-  const mobility=this.pair(root,'street-mobility');
-  bicycle(w,mobility.past,5.6,10.8,-Math.PI/2);bicycle(w,mobility.past,-5.8,-12,Math.PI/2);
-  // Today's small electric utility bicycles have a battery, saddle and rear box.
+  // Separate pairs keep bicycles in different parts of the lane independent.
   for(const [x,z] of [[5.6,10.8],[-5.8,-12]]){
+   const mobility=this.pair(root,'street-mobility-'+z,x,z);
+   bicycle(w,mobility.past,x,z,x>0?-Math.PI/2:Math.PI/2);
    const bike=bicycle(w,mobility.present,x,z,x>0?-Math.PI/2:Math.PI/2);
    w.box(bike,[.68,.48,.33],[-.05,.60,0],'#88a99b','metal');w.box(bike,[.64,.11,.30],[-.20,1.18,0],'#596d63');
    w.box(bike,[.5,.51,.48],[-.77,1.31,0],'#d2c2a0');
+   for(const g of [mobility.past,mobility.present]){w.batchStatic(g);w.batchScenery(g);}
   }
-  const amenities=this.pair(root,'street-amenities');
   for(const z of [15,-2,-20]){
+   const amenities=this.pair(root,'street-amenities-'+z,5.8,z);
    w.cylinder(amenities.past,.34,.75,[5.8,.47,z],'#9c896b',20,'wood');
    for(let n=0;n<10;n++)w.box(amenities.past,[.026,.73,.025],[5.8+Math.sin(n*.628)*.34,.48,z+Math.cos(n*.628)*.34],'#675f4a');
    w.box(amenities.present,[.55,1.0,.53],[5.7,.56,z],'#6c9788','metal');w.box(amenities.present,[.55,1.0,.53],[6.33,.56,z],'#9ca68d','metal');
    w.sign(amenities.present,'分类',.35,.21,[5.7,.69,z+.274],'#cbd8bd','#4d7764');
+   for(const g of [amenities.past,amenities.present]){w.batchStatic(g);w.batchScenery(g);}
   }
-  for(const pair of [mobility,amenities])for(const g of [pair.past,pair.present]){w.batchStatic(g);w.batchScenery(g);}
  }
- private pair(parent:T.Object3D,id:string){const past=new T.Group(),present=new T.Group();past.name=id+'-past';present.name=id+'-present';for(const g of [past,present]){g.userData.animationRoot=true;parent.add(g);}const p={past,present};this.pairs.push(p);return p;}
+ private pair(parent:T.Object3D,id:string,x?:number,z?:number){const past=new T.Group(),present=new T.Group();past.name=id+'-past';present.name=id+'-present';for(const g of [past,present]){g.userData.animationRoot=true;parent.add(g);}const position=parent.getWorldPosition(new T.Vector3());const p={past,present,x:x??position.x,z:z??position.z};this.pairs.push(p);return p;}
  updateMorning(progress:number){for(const door of this.morningDoors){const open=shopOpening(door.id,progress);for(const group of [door.past,door.present]){group.visible=open<.999;group.scale.y=1-open*.98;group.position.y=open*5.4;}}}
- update(turn:number){
+ update(turn:number,atPosition?:(x:number,z:number)=>number){
   if(Math.abs(turn-this.progress)<.0001)return;this.progress=turn;
-  const smooth=T.MathUtils.smoothstep(turn,0,1);
-  for(const c of this.colors)c.mat.color.lerpColors(c.old,c.now,smooth);
-  for(const p of this.pairs){p.past.visible=turn<.5;p.present.visible=turn>=.5;}
-  this.shutters.forEach(g=>g.rotation.y=turn<.5?turn*Math.PI:(turn-1)*Math.PI);
+  for(const c of this.colors)c.mat.color.lerpColors(c.old,c.now,T.MathUtils.smoothstep(atPosition?.(c.x,c.z)??turn,0,1));
+  for(const p of this.pairs){const local=atPosition?.(p.x,p.z)??turn;p.past.visible=local<.5;p.present.visible=local>=.5;}
+  this.shutters.forEach(g=>{const position=g.getWorldPosition(new T.Vector3()),local=atPosition?.(position.x,position.z)??turn;g.rotation.y=(local<.5?local:local-1)*Math.PI;});
  }
 }

@@ -1,0 +1,19 @@
+.market-explore .explore-basket.is-open{width:340px;max-width:calc(100vw - 24px)}
+.market-explore .basket-heading{padding:18px 16px;gap:10px}
+.market-explore .basket-heading p{font-size:10px}
+.market-explore .basket-close{display:block;min-width:44px;min-height:44px;font-size:24px;color:#8e9278}
+.market-explore .basket-items{padding:16px 14px}
+.basket-posters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 14px}
+.basket-poster-card{min-width:0}
+.market-explore .basket-poster{display:block;width:100%;padding:0;text-align:left;border:0;border-radius:0;background:none;cursor:pointer}
+.market-explore .basket-poster img{display:block;width:100%;height:auto;aspect-ratio:3/5;object-fit:contain;background:#eee5d2;box-shadow:0 3px 10px #55543b16}
+.basket-poster span{display:block;padding:10px 1px 0}
+.basket-poster b{display:block;font:18px/1.3 "KaiTi",serif;color:#53694c}
+.basket-poster small{display:block;margin-top:6px;font:9px/1.4 Georgia,serif;letter-spacing:1px;color:#929079}
+.basket-poster-actions{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:5px;border-bottom:1px solid #a9b29855}
+.market-explore .basket-poster-actions button{padding:0 1px;min-height:44px;font:11px "KaiTi",serif;color:#7e866c;cursor:pointer}
+.market-explore .basket-poster-actions .basket-poster-remove{font:22px Georgia,serif;min-width:44px;color:#9d9074}
+.market-explore .basket-poster:focus-visible,.market-explore .basket-poster-actions button:focus-visible{outline:2px solid #a77b43;outline-offset:3px}
+.market-explore .basket-bottom{padding:12px 16px 14px}
+@media(min-width:1100px){.market-explore .explore-basket.is-open{bottom:42px}}
+@media(max-width:760px){.market-explore .explore-basket.is-open{top:180px;bottom:154px;max-height:none}.market-explore .basket-heading{padding:10px 14px}.market-explore .basket-heading h2{font-size:23px}.market-explore .basket-heading>svg{width:23px}.market-explore .basket-items{padding:14px 12px}.basket-posters{gap:16px 12px}.basket-poster b{font-size:17px}}

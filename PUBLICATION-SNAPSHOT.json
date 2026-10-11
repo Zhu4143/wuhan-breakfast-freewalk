@@ -1,1 +1,10 @@
-{"version":"v9.0.0","date":"2026-10-04","sourceRepository":"https://github.com/Zhu4143/wuhan-breakfast-storybook-handoff","sourceBaseCommit":"163afdba7e3a73450b086fae325d883f2168774f","publicRepository":"https://github.com/GEMING-eng/wuhan-breakfast-freewalk","site":"https://geming-eng.github.io/wuhan-breakfast-freewalk/","note":"Independent continuation. The original v7 manifest is retained at docs/street/publication-v7-baseline.json. Source is on main; compiled website is on gh-pages."}
+{
+  "version": "v13-2026-10-11",
+  "date": "2026-10-11",
+  "sourceBaseCommit": "49c592616382ecd225c47f0f02c7811bcecd875d",
+  "publicRepository": "https://github.com/Zhu4143/wuhan-breakfast-freewalk",
+  "sourceBranch": "main",
+  "site": "https://zhu4143.github.io/wuhan-breakfast-freewalk/",
+  "pagesBranch": "gh-pages",
+  "note": "Public continuation of v13. The exact deployed source commit is recorded in the website version.json. Original v7 provenance is retained in docs/street/publication-v7-baseline.json."
+}

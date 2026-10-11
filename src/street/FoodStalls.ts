@@ -1,11 +1,14 @@
 import * as T from 'three';
 import {PaperWorkshop} from '../atelier/PaperWorkshop';
 import {makeSteam} from '../atelier/Steam';
+import type {ShopEraFrame} from '../atelier/EraSequence';
+import {paperSeam} from './eraDomino';
 const V=(x:number,y:number,z:number)=>new T.Vector3(x,y,z);
 /** Two kitchens share a counter, four physical wall hinges and one clock. */
 export class FoodStalls{
  private steam:ReturnType<typeof makeSteam>;
  private panels:T.Group[]=[];private wall=new T.Group();private eras=[new T.Group(),new T.Group()];
+ private food=new T.Group();
  constructor(w:PaperWorkshop,sockets:Map<string,T.Group>,interiors:HTMLImageElement[],private host?:HTMLDivElement){
   const socket=sockets.get('mianwo')!;socket.getObjectByName('removable-closure-mianwo')?.removeFromParent();
   const g=new T.Group();g.name='food-stall-mianwo';g.userData.animationRoot=true;socket.add(g);
@@ -37,7 +40,7 @@ export class FoodStalls{
    }
    w.batchStatic(objects);w.batchScenery(objects);
   }
-  const counter=new T.Group();counter.position.set(0,0,1);g.add(counter);
+  const counter=this.food;counter.userData.animationRoot=true;counter.position.set(0,0,1);g.add(counter);
   const pan=w.mesh(counter,new T.SphereGeometry(.81,32,16,0,Math.PI*2,0,Math.PI/2),w.material('#626d61','metal'),[-1.13,2.13,-.03]);pan.rotation.x=Math.PI;pan.scale.y=.22;
   w.cylinder(counter,.75,.012,[-1.13,2.07,-.03],'#b29450',32);
   for(let j=0;j<5;j++){
@@ -48,12 +51,14 @@ export class FoodStalls{
   w.line(counter,[V(-.4,2.13,-.1),V(.1,2.30,-.36),V(.35,2.35,-.45)],'#798b7a',.037);w.box(counter,[.1,.08,.40],[.35,2.37,-.53],'#a87850','wood');
   for(let i=0;i<4;i++)w.cylinder(counter,.38,.065,[1.65,1.84+i*.075,.02],'#d8decc',28,'ceramic');
   const steamParent=new T.Group();steamParent.userData.animationRoot=true;counter.add(steamParent);this.steam=makeSteam(w,steamParent,V(-1,2.23,0));
-  w.batchStatic(g);w.batchScenery(g);
+  w.batchStatic(g);w.batchScenery(this.food);w.batchScenery(g);
  }
- update(time:number,camera:T.Camera,turn=0){
-  this.panels.forEach(p=>p.rotation.y=turn*Math.PI);this.wall.position.z=-2.35-Math.sin(turn*Math.PI)*1.2;
-  this.eras.forEach((g,i)=>{g.visible=(turn<.5?i===0:i===1);g.scale.y=.96+.04*Math.abs(Math.cos(turn*Math.PI));});
-  this.steam.update(time,camera,true);this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.30*Math.pow(Math.abs(Math.cos(turn*Math.PI)),4));
-  if(this.host){this.host.dataset.mianwoEra=turn>=.5?'present':'past';this.host.dataset.mianwoWallAngle=(turn*180).toFixed(1);}
+ update(time:number,camera:T.Camera,turn=0,frame?:ShopEraFrame){
+  this.panels.forEach((p,i)=>p.rotation.y=(frame?.panels[i]??turn)*Math.PI);this.wall.position.z=-2.35-Math.sin((frame?.wall??turn)*Math.PI)*1.2;
+  const furniture=frame?.furniture??turn,food=frame?.food??turn;
+  this.eras.forEach((g,i)=>{g.visible=(furniture<.5?i===0:i===1);g.scale.x=frame?paperSeam(furniture):1;g.scale.y=.96+.04*Math.abs(Math.cos(furniture*Math.PI));});
+  this.food.rotation.x=-Math.sin(food*Math.PI)*.10;
+  this.steam.update(time,camera,true);this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.30*Math.pow(Math.abs(Math.cos(food*Math.PI)),4));
+  if(this.host){this.host.dataset.mianwoEra=furniture>=.5?'present':'past';this.host.dataset.mianwoWallAngle=((frame?.panels[0]??turn)*180).toFixed(1);}
  }
 }

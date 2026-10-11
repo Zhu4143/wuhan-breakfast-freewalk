@@ -3,6 +3,9 @@ import type {TourStop} from './tourContent';
 import {walkStep,clampFov,angleDelta,EYE_HEIGHT} from './walkMath.ts';
 import {planWalkRoute,walkSegmentClear,moveWithClearance,type WalkObstacle} from './walkNavigation.ts';
 
+export type PreviewWalkPose={position:[number,number,number];yaw:number;pitch:number;fov:number;stop:string;destination:[number,number,number]|null;aim:[number,number,number]|null;route:[number,number,number][]};
+export const PREVIEW_POSE_INTERVAL_MS=100;
+
 /** A single eye-height camera for entering, walking, looking and visiting. */
 export class FreeWalk{
  readonly position=new T.Vector3(0,EYE_HEIGHT,11);
@@ -12,6 +15,9 @@ export class FreeWalk{
  private enabled=false;private blocked=false;private manual=false;
  private route:T.Vector3[]=[];private aim:T.Vector3|null=null;private stop='street';
  private destination:T.Vector3|null=null;private retry=0;
+ private previewFollower=false;
+ private previewTarget:PreviewWalkPose|null=null;
+ private previewBlend:{position:T.Vector3;yaw:number;pitch:number;fov:number;elapsed:number}|null=null;
  private host:HTMLDivElement;private onTravel:(moving:boolean)=>void;private onManual:()=>void;private obstacles:()=>readonly WalkObstacle[];
  constructor(host:HTMLDivElement,onTravel:(moving:boolean)=>void,onManual:()=>void,obstacles:()=>readonly WalkObstacle[]=()=>[]){
   this.host=host;this.onTravel=onTravel;this.onManual=onManual;this.obstacles=obstacles;
@@ -43,6 +49,7 @@ export class FreeWalk{
  joystick(x:number,y:number){this.stick=this.usable()?{x,y}:{x:0,y:0};}
  cancel(){const moving=!!this.destination;this.route=[];this.aim=null;this.destination=null;if(moving)this.onTravel(false);}
  go(stop:TourStop){
+  if(this.previewFollower)return;
   this.clear();this.stop=stop.id;const end=new T.Vector3(...stop.position);end.y=EYE_HEIGHT;
   this.destination=end;this.aim=new T.Vector3(...stop.look);this.replan(this.obstacles());this.onTravel(true);
  }
@@ -50,6 +57,8 @@ export class FreeWalk{
   this.route=planWalkRoute(this.position,this.destination!,obstacles,this.aim??undefined).map(p=>new T.Vector3(p.x,EYE_HEIGHT,p.z));this.retry=.25;
  }
  update(dt:number){
+  // Mirrored camera motion continues while a story or drawer blocks local input.
+  if(this.previewFollower){this.updatePreview(dt);return;}
   if(!this.usable())return;
   const side=Number(this.keys.has('KeyD')||this.keys.has('ArrowRight'))-Number(this.keys.has('KeyA')||this.keys.has('ArrowLeft'))+this.stick.x;
   const forward=Number(this.keys.has('KeyW')||this.keys.has('ArrowUp'))-Number(this.keys.has('KeyS')||this.keys.has('ArrowDown'))-this.stick.y;
@@ -75,5 +84,30 @@ export class FreeWalk{
  }
  view(aspect:number){const direction=new T.Vector3(Math.sin(this.yaw)*Math.cos(this.pitch),Math.sin(this.pitch),-Math.cos(this.yaw)*Math.cos(this.pitch));return {position:this.position.clone(),target:this.position.clone().add(direction),direct:true,fov:clampFov(this.fov+(aspect<1?10:0))};}
  get state(){return {stop:this.stop,moving:!!this.destination,eye:EYE_HEIGHT,yaw:this.yaw,pitch:this.pitch,fov:this.fov};}
+ setPreviewFollower(value:boolean){if(value!==this.previewFollower){this.clear();this.previewTarget=null;this.previewBlend=null;}this.previewFollower=value;}
+ get previewPose():PreviewWalkPose{return {position:this.position.toArray(),yaw:this.yaw,pitch:this.pitch,fov:this.fov,stop:this.stop,destination:this.destination?.toArray()??null,aim:this.aim?.toArray()??null,route:this.route.map(point=>point.toArray())};}
+ applyPreviewPose(pose:PreviewWalkPose){
+  if(pose===this.previewTarget)return;
+  const moving=!!this.destination;
+  const previous=this.previewTarget;
+  // Initial joins and discontinuous visits are immediate; adjacent walk samples
+  // interpolate at render cadence, one packet behind, without predicting a route.
+  if(!previous||this.position.distanceTo(new T.Vector3(...pose.position))>2){
+   this.position.fromArray(pose.position);this.yaw=pose.yaw;this.pitch=pose.pitch;this.fov=pose.fov;this.previewBlend=null;
+  }else if(previous.position.some((v,i)=>v!==pose.position[i])||previous.yaw!==pose.yaw||previous.pitch!==pose.pitch||previous.fov!==pose.fov){
+   this.previewBlend={position:this.position.clone(),yaw:this.yaw,pitch:this.pitch,fov:this.fov,elapsed:0};
+  }
+  this.previewTarget=pose;this.stop=pose.stop;
+  this.destination=pose.destination?new T.Vector3(...pose.destination):null;this.aim=pose.aim?new T.Vector3(...pose.aim):null;this.route=pose.route.map(point=>new T.Vector3(...point));
+  if(moving!==!!this.destination)this.onTravel(!!this.destination);
+ }
+ private updatePreview(dt:number){
+  const blend=this.previewBlend,target=this.previewTarget;if(!blend||!target)return;
+  blend.elapsed+=Math.max(0,dt);const progress=Math.min(1,blend.elapsed/(PREVIEW_POSE_INTERVAL_MS/1000));
+  this.position.set(...target.position).lerp(blend.position,1-progress);
+  this.yaw=blend.yaw+angleDelta(blend.yaw,target.yaw)*progress;
+  this.pitch=T.MathUtils.lerp(blend.pitch,target.pitch,progress);this.fov=T.MathUtils.lerp(blend.fov,target.fov,progress);
+  if(progress===1){this.yaw=target.yaw;this.previewBlend=null;}
+ }
  dispose(){this.clear();this.host.removeEventListener('pointerdown',this.down);this.host.removeEventListener('pointermove',this.move);this.host.removeEventListener('pointerup',this.up);this.host.removeEventListener('pointercancel',this.up);this.host.removeEventListener('wheel',this.wheel);window.removeEventListener('keydown',this.keydown);window.removeEventListener('keyup',this.keyup);window.removeEventListener('blur',this.clear);document.removeEventListener('visibilitychange',this.clear);}
 }

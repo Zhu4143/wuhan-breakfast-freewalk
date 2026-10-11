@@ -6,6 +6,7 @@ import {isMobileScene,sceneImageUrl} from './sceneAssets.ts';
 /** Geometry supplies depth; image assets supply the painted detail. All resources belong to this workshop. */
 export class PaperWorkshop {
   illustrated=false;
+  realism=false;
   readonly mobile=isMobileScene();
   onImageLoaded:((count:number)=>void)|undefined;
   private loadedImages=0;
@@ -47,7 +48,7 @@ export class PaperWorkshop {
       };mat.customProgramCacheKey=()=> 'storybook-printed-'+kind;
       this.cache.set(key,mat);return mat;
     }
-    const c=document.createElement('canvas');const resolution=kind==='wood'||kind==='cloth'?512:256;c.width=c.height=resolution;const x=c.getContext('2d')!;x.scale(resolution/1024,resolution/1024);
+    const c=document.createElement('canvas');const resolution=kind==='wood'||kind==='cloth'||kind==='vinyl'?512:256;c.width=c.height=resolution;const x=c.getContext('2d')!;x.scale(resolution/1024,resolution/1024);
     x.fillStyle=color; x.fillRect(0,0,1024,1024); let seed=815;
     const rand=()=>{seed=(seed*16807)%2147483647; return seed/2147483647;};
     for(let i=0;i<24000;i++){x.fillStyle=i%3?'#f8eed41b':'#231d1926'; x.fillRect(rand()*1024,rand()*1024,.5+rand()*2,.5+rand()*2);}
@@ -58,8 +59,77 @@ export class PaperWorkshop {
     }
     if(kind==='cloth')for(let i=0;i<1024;i+=5){x.fillStyle=i%10?'#19181318':'#fff8e028';x.fillRect(i,0,1,1024);x.fillRect(0,i,1024,1);}
     if(kind==='stone')for(let i=0;i<70;i++){x.strokeStyle='#e5e2ce24';x.lineWidth=1+rand()*2;x.beginPath();const y=rand()*1024;x.moveTo(0,y);x.bezierCurveTo(280,y+60,710,y-50,1024,y+18);x.stroke();}
+    // Fired clay roof tile. The painted set gave the roof plain stone grain, so the whole surface read
+    // as one flat grey sheet. What the texture must supply here is weathering only — soot towards the
+    // low edge, lime bloom, and blotchy kiln variation — because the barrel shape itself is already
+    // real geometry. Drawing ridge lines into it makes the roof read as corrugated metal instead of 瓦.
+    if(kind==='tile'){
+      // Dark soot dominates and the chalky bloom stays sparse, so the roof keeps the dark clay body of
+      // the painted set instead of turning pale and blotchy.
+      for(let i=0;i<190;i++){
+        const t=i%4;x.globalAlpha=.04+rand()*.10;x.fillStyle=t===1?'#5f736e':t===0?'#16211f':'#3b4c48';
+        x.beginPath();x.ellipse(rand()*1024,rand()*1024,16+rand()*78,10+rand()*34,rand()*3.1,0,6.2832);x.fill();
+      }
+      // Rain wash streaks run down the slope, which is the v axis of these shells. They stay faint:
+      // stronger lines read as scratches on metal rather than as weathering on fired clay.
+      for(let i=0;i<26;i++){const sx=rand()*1024;x.globalAlpha=.03+rand()*.04;x.strokeStyle=i%2?'#131d1b':'#7e8f8a';x.lineWidth=1.4+rand()*3.4;x.beginPath();for(let y=0;y<=1024;y+=72){const px=sx+Math.sin(y*.009+i*2.1)*11;y?x.lineTo(px,y):x.moveTo(px,y);}x.stroke();}
+      x.globalAlpha=1;
+    }
+    // Coated PVC tarpaulin. Plastic shows itself through wrinkles, because creases are what the
+    // stretched highlight breaks on; the woven grid the cloth kind drew is invisible at canopy scale
+    // and reads as fabric, not sheeting. Each crease is a soft band built from concentric strokes
+    // with falling alpha, which needs no canvas filter support.
+    if(kind==='vinyl'){
+      const crease=(vertical:boolean,pos:number,bend:number,alpha:number,light:boolean,width:number)=>{
+        for(let k=-5;k<=5;k++){
+          const falloff=1-Math.abs(k)/6;
+          x.globalAlpha=alpha*falloff*falloff*falloff;
+          x.strokeStyle=light?'#ffffff':'#151d1a';
+          x.lineWidth=width;
+          x.beginPath();
+          const offset=k*4.2;
+          if(vertical){const a=pos+offset;x.moveTo(a,-80);x.quadraticCurveTo(a+bend,512,a+k*2.8,1104);}
+          else{const a=pos+offset;x.moveTo(-80,a);x.quadraticCurveTo(512,a+bend,1104,a+k*2.8);}
+          x.stroke();
+        }
+      };
+      // Long pull wrinkles. Widths and strengths are deliberately uneven: creases of even weight read as
+      // corrugation rather than as a slack sheet of sheeting.
+      for(let i=0;i<8;i++)crease(true,-100+rand()*1224,-140+rand()*280,.11+rand()*.24,rand()<.5,1.4+rand()*3.6);
+      for(let i=0;i<5;i++)crease(false,-100+rand()*1224,-140+rand()*280,.08+rand()*.16,rand()<.45,1.4+rand()*3);
+      // Diagonal pulls from the corners, where the sheet is anchored at both ends.
+      for(let i=0;i<3;i++){x.globalAlpha=.05+rand()*.07;x.strokeStyle=i%2?'#ffffff':'#1a2320';x.lineWidth=2+rand()*3;x.beginPath();x.moveTo(rand()*180,1024);x.quadraticCurveTo(420+rand()*220,520,1024-rand()*180,0);x.stroke();}
+      // Broad shading of a slack sheet: it tucks dark under the rail and brightens across the belly.
+      // Kept faint because the same canvas doubles as the bump map, where a strong gradient would tilt
+      // the whole surface normal.
+      const wash=x.createLinearGradient(0,0,0,1024);
+      wash.addColorStop(0,'#0000001a');wash.addColorStop(.34,'#ffffff12');wash.addColorStop(.62,'#ffffff1c');wash.addColorStop(1,'#00000022');
+      x.globalAlpha=1;x.fillStyle=wash;x.fillRect(0,0,1024,1024);
+      for(let i=0;i<44;i++){x.globalAlpha=.03+rand()*.05;x.fillStyle=i%2?'#2b332f':'#cfd8d4';x.beginPath();x.ellipse(rand()*1024,rand()*1024,20+rand()*92,12+rand()*42,rand()*3.1,0,6.2832);x.fill();}
+      x.globalAlpha=1;
+    }
     let bump=this.bumps.get(kind);if(!bump){bump=this.ownTexture(new T.CanvasTexture(c));bump.colorSpace=T.NoColorSpace;this.bumps.set(kind,bump);}
-    const mat=this.ownMaterial(new T.MeshStandardMaterial({map:this.ownTexture(new T.CanvasTexture(c)),bumpMap:bump,bumpScale:kind==='wood'?.028:kind==='stone'?.025:kind==='cloth'?.008:.004,roughness:kind==='metal'?.36:kind==='ceramic'?.28:.86,metalness:kind==='metal'?.72:0,envMapIntensity:kind==='ceramic'?.8:.28}));
+    const map=this.ownTexture(new T.CanvasTexture(c));
+    if(this.realism){
+      // Physical values instead of painted ones. The painted set forced roughness 1 and
+      // envMapIntensity 0.10 on every surface, so nothing ever showed a highlight, a reflection,
+      // or a difference between clay, glaze, cloth and steel. That uniformity is the "paper" read.
+      const shared={map,bumpMap:bump,bumpScale:kind==='wood'?.05:kind==='stone'?.045:kind==='tile'?.024:kind==='vinyl'?.03:kind==='cloth'?.018:.012};
+      if(kind==='metal'){const m=this.ownMaterial(new T.MeshStandardMaterial({...shared,roughness:.3,metalness:.92,envMapIntensity:1.5}));this.cache.set(key,m);return m;}
+      if(kind==='ceramic'){const glaze=this.ownMaterial(new T.MeshPhysicalMaterial({...shared,roughness:.16,metalness:0,clearcoat:.85,clearcoatRoughness:.12,envMapIntensity:1.6}));this.cache.set(key,glaze);return glaze;}
+      // Coated PVC sheet. A low, broad highlight is the whole read: the cloth values (roughness 0.84,
+      // fibrous sheen) made the awning a flat painted slab. The clearcoat stands in for the plasticised
+      // skin over the weave, and it is what stretches that highlight along the sheet.
+      if(kind==='vinyl'){const tarp=this.ownMaterial(new T.MeshPhysicalMaterial({...shared,roughness:.3,metalness:0,clearcoat:.6,clearcoatRoughness:.22,envMapIntensity:1.1}));this.cache.set(key,tarp);return tarp;}
+      if(kind==='cloth'){const fabric=this.ownMaterial(new T.MeshPhysicalMaterial({...shared,roughness:.84,metalness:0,sheen:1,sheenRoughness:.55,sheenColor:new T.Color('#fff2dd'),envMapIntensity:.8}));this.cache.set(key,fabric);return fabric;}
+      // Fired clay roof tile. The plain 'stone' values (roughness 0.66, no reflection) left the roof
+      // with no specular response at all, which is why material work was invisible on it. Clay is still
+      // matte, so the reflection stays low and only the worn barrel edges keep a sheen — a broad
+      // environment pickup made the barrels read as glazed porcelain.
+      const surface=this.ownMaterial(new T.MeshStandardMaterial({...shared,roughness:kind==='stone'?.66:kind==='tile'?.58:.6,metalness:0,envMapIntensity:kind==='tile'?.8:1.05}));
+      this.cache.set(key,surface);return surface;
+    }
+    const mat=this.ownMaterial(new T.MeshStandardMaterial({map,bumpMap:bump,bumpScale:kind==='wood'?.028:kind==='stone'?.025:kind==='cloth'?.008:.004,roughness:kind==='metal'?.36:kind==='ceramic'?.28:.86,metalness:kind==='metal'?.72:0,envMapIntensity:kind==='ceramic'?.8:.28}));
     if(kind==='ceramic'){const glaze=this.ownMaterial(new T.MeshPhysicalMaterial({map:mat.map,bumpMap:mat.bumpMap,bumpScale:.004,clearcoat:.5,clearcoatRoughness:.24,roughness:.4,envMapIntensity:1.2}));this.cache.set(key,glaze);return glaze;}
     this.cache.set(key,mat); return mat;
   }
@@ -69,9 +139,9 @@ export class PaperWorkshop {
     if(kind==='wood'&&size[0]>size[1]){const uv=geo.getAttribute('uv');for(let i=0;i<uv.count;i++){const a=uv.getX(i);uv.setXY(i,uv.getY(i),1-a);}}
     return this.mesh(parent,geo,this.material(color,kind),p);
   }
-  shape(parent:T.Object3D, points:number[][], p:number[], color:string, depth=.045) {
+  shape(parent:T.Object3D, points:number[][], p:number[], color:string, depth=.045, kind='paper') {
     const s=new T.Shape();points.forEach((a,i)=>i?s.lineTo(a[0],a[1]):s.moveTo(a[0],a[1]));s.closePath();
-    return this.mesh(parent,new T.ExtrudeGeometry(s,{depth,bevelEnabled:false}),this.illustrated?this.material(color):[this.material(color),this.material('#ccba98')],p);
+    return this.mesh(parent,new T.ExtrudeGeometry(s,{depth,bevelEnabled:false}),this.illustrated?this.material(color,kind):[this.material(color,kind),this.material('#ccba98')],p);
   }
   cylinder(parent:T.Object3D, radius:number, height:number, p:number[], color:string, sides=32,kind='paper') {
     return this.mesh(parent,new T.CylinderGeometry(radius,radius*.96,height,sides),this.material(color,kind),p);
@@ -99,7 +169,9 @@ export class PaperWorkshop {
     if(!material){
       const texture=this.ownTexture(new T.Texture(image));texture.needsUpdate=true;
       if(atlas){texture.repeat.set(1/3,1/2);texture.offset.set(0,1/2);}
-      material=this.ownMaterial(new T.MeshStandardMaterial({map:texture,alphaTest:cutout?.7:0,side:T.DoubleSide,roughness:.92,emissive:'#ffffff',emissiveMap:texture,emissiveIntensity:this.illustrated?.28:.12}));
+      // The emissive term makes a printed panel read as a lit page. Realism drops it entirely:
+      // a wall lit by a room does not glow.
+      material=this.ownMaterial(new T.MeshStandardMaterial({map:texture,alphaTest:cutout?.7:0,side:T.DoubleSide,roughness:this.realism?.8:.92,metalness:0,emissive:'#ffffff',emissiveMap:this.realism?null:texture,emissiveIntensity:this.realism?0:(this.illustrated?.28:.12),envMapIntensity:this.realism?.85:.28}));
       if(!cutout&&!atlas)this.prints.set(image.src,material);
     }
     let geo:T.BufferGeometry;
@@ -199,7 +271,8 @@ export class PaperWorkshop {
   inkContours(parent:T.Object3D){
     // Mobile keeps SceneFinish's painted edge pass; avoid constructing a second
     // full set of topology-derived lines before the street can become interactive.
-    if(this.mobile)return;
+    // Realism mode drops them entirely: a drawn outline is the single loudest "illustration" cue.
+    if(this.mobile||this.realism)return;
     const ink=this.ownMaterial(new T.LineBasicMaterial({color:'#574e44',transparent:true,opacity:.53,depthWrite:false}));
     const meshes:T.Mesh[]=[];parent.traverse(o=>{if(o instanceof T.Mesh&&o.material instanceof T.MeshStandardMaterial&&!o.material.map&&!o.userData.noAO)meshes.push(o);});
     for(const mesh of meshes){const geo=new T.EdgesGeometry(mesh.geometry,32);this.geometries.add(geo);const line=new T.LineSegments(geo,ink);line.userData.noAO=true;line.renderOrder=1;mesh.add(line);}

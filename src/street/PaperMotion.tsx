@@ -50,7 +50,7 @@ export function PaperSwap({id,children,className=''}:{id:string;children:ReactNo
  </div>;
 }
 
-export function PaperDialog({open,onClose,children}:{open:boolean;onClose:()=>void;children:ReactNode}){
+export function PaperDialog({open,onClose,children,className='explore-sources',label}:{open:boolean;onClose:()=>void;children:ReactNode;className?:string;label?:string}){
  const ref=useRef<HTMLDialogElement>(null),animation=useRef<gsap.core.Timeline|null>(null);
  const latest=useRef(open);latest.current=open;
  useLayoutEffect(()=>{
@@ -67,5 +67,5 @@ export function PaperDialog({open,onClose,children}:{open:boolean;onClose:()=>vo
    .to(node,{opacity:open?1:0,y:open||reduced?0:14,'--veil':open?1:0},0);
   return()=>{animation.current?.kill();};
  },[open]);
- return <dialog className="explore-sources" ref={ref} onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>{children}</dialog>;
+ return <dialog className={className} aria-label={label} ref={ref} onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>{children}</dialog>;
 }

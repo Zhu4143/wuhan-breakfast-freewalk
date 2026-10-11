@@ -7,34 +7,46 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {addShopDetails} from './ShopDetails';
 import {makeSteam} from './Steam';
 import {SceneFinish} from './SceneFinish';
+import type {PhotoOptions} from './PhotoFinish';
+import type {RealismOptions} from './Realism';
+import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import type {SceneExtension} from './SceneExtension';
+import {FrameCadence} from './FrameCadence';
+import {FrameLoop} from './FrameLoop';
+import {isPreviewChild} from '../preview/previewBridge';
 
 export class AtelierScene {
   readonly renderer:T.WebGLRenderer;
   readonly scene=new T.Scene(); readonly camera=new T.PerspectiveCamera(35,1,.1,80);
   readonly workshop=new PaperWorkshop(); readonly root=new T.Group();
-  private disposed=false; private frame=0; private last=0; private elapsed=0;
+  private disposed=false; private cadence=new FrameCadence(30); private elapsed=0;
+  private frameLoop=new FrameLoop((now,fallback)=>{if(this.disposed||this.lost||document.hidden)return;if(fallback)gsap.ticker.tick();this.tick(now);},isPreviewChild);
   private pointer=new T.Vector2(); private drift=new T.Vector2(); private drag:{x:number;start:number}|null=null;
   private orbit=0; private size={w:1,h:1}; private target=new T.Vector3();
   private focus:Detail='welcome'; private focusBlend={value:1}; private focusStart=new T.Vector3(); private targetStart=new T.Vector3();
   private wall=new T.Group(); private panels:T.Group[]=[]; private canopies:T.Group[]=[]; private wallTravel={value:0}; private setPortraitFrame:((a:number,b:number,mix:number,blink:number)=>void)[]=[]; private speakingUntil=0;
   private nextBlink=4.2; private blinkUntil=0;
   private environment:T.WebGLRenderTarget|null=null; private finish:SceneFinish;
+  private ambient:T.HemisphereLight|null=null;
   private anchors=new Map<Detail,T.Vector3>(); private leaves:T.Group[]=[]; private steam:ReturnType<typeof makeSteam>|null=null;
   private keepers:T.Object3D[]=[]; private hanging=new T.Group(); private past=new T.Group(); private present=new T.Group();
   private era:Era='past'; private transition:gsap.core.Timeline|null=null; private cameraTween:gsap.core.Tween|null=null;
+  private eraPlayhead={value:0}; private meal:T.Group|null=null;
   private motion=true; private lost=false; private ready=false; private flat=false; private exploded={value:0};
   private layers:{object:T.Object3D;z:number;offset:number}[]=[]; private resizeObserver:ResizeObserver;
-  private onVisibility=()=>{if(document.hidden)cancelAnimationFrame(this.frame);else{this.last=performance.now();this.tick(this.last);}};
-  constructor(private host:HTMLDivElement,private markers:Map<Detail,HTMLButtonElement>,private status:(s:string)=>void,private onEra:(era:Era)=>void=()=>{},private onTurning:(turning:boolean)=>void=()=>{},private extension?:SceneExtension,illustrated=false){
-    this.workshop.illustrated=illustrated||!!extension?.illustrated;
+  private onVisibility=()=>{if(document.hidden)this.frameLoop.stop();else if(this.ready&&!this.lost&&!this.disposed){this.cadence.reset(performance.now());this.frameLoop.start();}};
+  constructor(private host:HTMLDivElement,private markers:Map<Detail,HTMLButtonElement>,private status:(s:string)=>void,private onEra:(era:Era)=>void=()=>{},private onTurning:(turning:boolean)=>void=()=>{},private extension?:SceneExtension,illustrated=false,private photo?:PhotoOptions,private realism?:RealismOptions){
+    this.workshop.realism=!!this.realism?.enabled;
+    // Realism takes the non-painted asset set and the physical material branch, so the two looks
+    // never mix; every downstream 'illustrated' test follows from this one assignment.
+    this.workshop.illustrated=(illustrated||!!extension?.illustrated)&&!this.workshop.realism;
     this.renderer=new T.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio,2));this.renderer.outputColorSpace=T.SRGBColorSpace;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio,2)*(this.photo?.enabled?this.photo.supersample:1));this.renderer.outputColorSpace=T.SRGBColorSpace;
     this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.02;
     this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFShadowMap;this.renderer.shadowMap.autoUpdate=false;
     this.renderer.setClearColor('#000000',0);host.appendChild(this.renderer.domElement);
     this.renderer.domElement.setAttribute('aria-label',extension?.ownsPointer?'武汉老街三维纸景，第一人称自由行走':'林记热干面三维纸景：可拖动视角，通过旁边的按钮观察旧物');
-    this.scene.add(new T.HemisphereLight('#e8eef6','#695641',.24));
+    this.ambient=new T.HemisphereLight('#e8eef6','#695641',.24);this.scene.add(this.ambient);
     const sun=new T.DirectionalLight('#ffecd0',3.25);sun.position.set(-3.8,7,6);sun.castShadow=true;
     sun.shadow.mapSize.set(3072,3072);Object.assign(sun.shadow.camera,{left:-7,right:7,top:7,bottom:-5,near:.1,far:26});sun.shadow.normalBias=.008;sun.shadow.bias=-.00008;
     const fill=new T.DirectionalLight('#ccdeeb',.28);fill.position.set(4,3,8);this.scene.add(fill);
@@ -42,14 +54,38 @@ export class AtelierScene {
     this.environment=pmrem.fromScene(environmentScene,.05);this.scene.environment=this.environment.texture;this.scene.environmentIntensity=.42;
     environmentScene.dispose();pmrem.dispose();
     if(this.workshop.illustrated){sun.intensity=2.1;fill.intensity=.72;this.scene.environmentIntensity=.3;}
-    this.scene.add(sun);this.scene.add(this.root);this.extension?.configure(this.scene,this.renderer,this.camera,this.root);this.finish=new SceneFinish(this.renderer,this.scene,this.camera,this.workshop.illustrated);
+    if(this.realism?.enabled)this.applyRealism(sun,fill);
+    this.scene.add(sun);this.scene.add(this.root);this.extension?.configure(this.scene,this.renderer,this.camera,this.root);this.finish=new SceneFinish(this.renderer,this.scene,this.camera,this.workshop.illustrated,this.photo);
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(host);
     host.addEventListener('pointermove',this.move);host.addEventListener('pointerdown',this.down);host.addEventListener('pointerup',this.up);host.addEventListener('pointercancel',this.up);host.addEventListener('pointerleave',this.leave);
     this.renderer.domElement.addEventListener('webglcontextlost',this.contextLost);this.renderer.domElement.addEventListener('webglcontextrestored',this.contextRestored);
     document.addEventListener('visibilitychange',this.onVisibility);this.resize();
+    this.host.dataset.look=this.workshop.realism?'real':this.workshop.illustrated?'paper':'plain';
   }
-  private contextLost=(e:Event)=>{e.preventDefault();this.lost=true;cancelAnimationFrame(this.frame);this.status('lost');};
-  private contextRestored=()=>{if(this.disposed)return;this.lost=false;this.renderer.resetState();this.status('ready');this.last=performance.now();this.tick(this.last);};
+  /**
+   * Realism lighting: one strong key, almost no fill, and let a real capture of a dawn street
+   * carry the ambient. The painted set relied on a bright hemisphere plus a flat directional fill,
+   * which is why nothing in the old look has a shadow side.
+   */
+  private applyRealism(sun:T.DirectionalLight,fill:T.DirectionalLight){
+    const options=this.realism!;
+    sun.intensity=options.sunIntensity;fill.intensity=options.fillIntensity;
+    if(this.ambient)this.ambient.intensity=options.ambientIntensity;
+    this.scene.environmentIntensity=options.environmentIntensity;
+    if(!options.environment)return;
+    // A PMREM built from a real equirectangular sky replaces the procedural room. Both are cubeUV,
+    // so materials pick up the swap without recompiling.
+    new HDRLoader().loadAsync(import.meta.env.BASE_URL+options.environment).then(texture=>{
+      if(this.disposed){texture.dispose();return;}
+      texture.mapping=T.EquirectangularReflectionMapping;
+      const pmrem=new T.PMREMGenerator(this.renderer);
+      const target=pmrem.fromEquirectangular(texture);
+      pmrem.dispose();texture.dispose();
+      this.environment?.dispose();this.environment=target;this.scene.environment=target.texture;
+    }).catch(error=>console.warn('Realism environment failed to load; keeping the room environment.',error));
+  }
+  private contextLost=(e:Event)=>{e.preventDefault();this.lost=true;this.frameLoop.stop();this.status('lost');};
+  private contextRestored=()=>{if(this.disposed)return;this.lost=false;this.renderer.resetState();this.status('ready');this.cadence.reset(performance.now());if(!document.hidden)this.frameLoop.start();};
   private down=(e:PointerEvent)=>{if(this.extension?.ownsPointer||(e.target as HTMLElement).closest('button'))return;this.drag={x:e.clientX,start:this.orbit};this.host.setPointerCapture(e.pointerId);};
   private up=(e:PointerEvent)=>{if(this.extension?.ownsPointer)return;this.drag=null;if(this.host.hasPointerCapture(e.pointerId))this.host.releasePointerCapture(e.pointerId);};
   private move=(e:PointerEvent)=>{if(this.extension?.ownsPointer)return;const b=this.host.getBoundingClientRect();this.pointer.set((e.clientX-b.left)/b.width-.5,(e.clientY-b.top)/b.height-.5);if(this.drag)this.orbit=T.MathUtils.clamp(this.drag.start+(e.clientX-this.drag.x)/b.width*1.1,-.35,.35);};
@@ -94,8 +130,21 @@ export class AtelierScene {
     const roof=new T.Group();g.add(roof);this.layer(roof,.65);
     w.box(roof,[8.35,.16,1.85],[0,5.64,-.27],'#39494a');
     for(let row=0;row<4;row++)for(let col=0;col<24;col++){
-      const tileMat=w.material((row+col)%3?'#495954':'#354745','stone');tileMat.side=T.DoubleSide;
-      const tile=w.mesh(roof,new T.CylinderGeometry(.175,.168,.53,12,1,true,Math.PI/2,Math.PI),tileMat,[-3.96+col*.346,5.61+row*.11+Math.sin(col*7+row)*.013,.42-row*.45]);tile.rotation.x=Math.PI/2+.22;tile.rotation.z=Math.sin(col*11+row)*.012;
+      // Real barrel tiling: three clay tones, and each shell sampling its own patch of the weathering
+      // texture. Previously 96 caps shared two materials on a perfect (row+col)%3 pitch and every one
+      // of them reused identical geometry at identical UVs, so the pattern landed in the same place on
+      // all of them — the roof read as one printed sheet, which is why swapping its material produced
+      // nothing visible. Rows stay aligned: these are half-cylinders laid side by side, and half a
+      // pitch of stagger opens daylight between them.
+      const tileMat=w.material((row+col)%3?(col%7?'#495954':'#546763'):'#354745','tile');tileMat.side=T.DoubleSide;
+      const geometry=new T.CylinderGeometry(.175,.168,.53,12,1,true,Math.PI/2,Math.PI);
+      if(w.realism){
+        // Quarter-UV offsets stay inside the texture, so the shared map keeps its default clamping.
+        const uv=geometry.getAttribute('uv'),ou=((col*3+row*5)%4)*.25,ov=((col*5+row*11)%4)*.25;
+        for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*.25+ou,uv.getY(i)*.25+ov);
+      }
+      const tile=w.mesh(roof,geometry,tileMat,[-3.96+col*.346,5.61+row*.11+Math.sin(col*7+row)*.013,.42-row*.45]);
+      tile.rotation.x=Math.PI/2+.22;tile.rotation.z=Math.sin(col*11+row)*.012;
     }
     w.box(roof,[8.6,.16,.2],[0,5.63,.7],'#293e40','wood');
     this.past.name='era-past';this.present.name='era-present';g.add(this.past,this.present);this.present.visible=false;
@@ -104,9 +153,23 @@ export class AtelierScene {
       w.sign(eraGroup,isPast?'林 記 · 熱 干 麵':'林记 · 热干面',5.9,.82,[.5,5.16,.51],isPast?'#893c30':'#e6dcc2',isPast?'#f1dbad':'#304b4c',isPast?'清 晨 开 门　·　街 坊 老 味 道':'过 早 旧 味　·　一 碗 如 常');
       const canopy=new T.Group();canopy.position.set(.53,4.73,.44);eraGroup.add(canopy);this.canopies.push(canopy);
       for(let i=0;i<12;i++){
-        const panel=w.box(canopy,[.512,.025,1.48],[-2.85+i*.518,-.13,.67],isPast?(i%2?'#963f30':'#b66140'):(i%2?'#647e75':'#e3d6b5'),'cloth');panel.rotation.x=.16;
+        const stripe=isPast?(i%2?'#963f30':'#b66140'):(i%2?'#647e75':'#e3d6b5');
+        // A slack sheet, not a flat plate. The sag depends on z alone and returns to zero at both rails,
+        // so neighbouring stripes stay flush while each panel curves; that curvature is what lets the
+        // highlight sweep along the sheet, which is what actually reads as flexible vinyl.
+        const sag=new T.BoxGeometry(.512,.025,1.48,2,1,8);
+        const sp=sag.getAttribute('position');
+        for(let k=0;k<sp.count;k++){const t=(sp.getZ(k)+.74)/1.48;sp.setY(k,sp.getY(k)-Math.sin(t*Math.PI)*.055);}
+        sag.computeVertexNormals();
+        const panel=w.mesh(canopy,sag,w.material(stripe,'vinyl'),[-2.85+i*.518,-.13,.67]);panel.rotation.x=.16;
+        if(w.realism){
+          // Each stripe is a separate welded sheet, so no two should carry the same creases. Four
+          // quadrants plus a mirror gives eight variants across the twelve stripes.
+          const uv=panel.geometry.getAttribute('uv'),uo=(i%2)*.5,vo=((i>>1)%2)*.5,mirror=(i>>2)%2;
+          for(let k=0;k<uv.count;k++){const u=uv.getX(k)*.5+uo;uv.setXY(k,mirror?1-u:u,uv.getY(k)*.5+vo);}
+        }
         w.line(canopy,[new T.Vector3(-3.09+i*.518,-.015,0),new T.Vector3(-3.09+i*.518,-.245,1.39)],isPast?'#ddb77d':'#a5b5a2',.006);
-        w.shape(canopy,[[-.26,0],[.26,0],[.25,-.29],[.10,-.33],[-.09,-.30],[-.26,-.32]],[-2.85+i*.518,-.245,1.41],isPast?(i%2?'#963f30':'#b66140'):(i%2?'#647e75':'#e3d6b5'),.025);
+        w.shape(canopy,[[-.26,0],[.26,0],[.25,-.29],[.10,-.33],[-.09,-.30],[-.26,-.32]],[-2.85+i*.518,-.245,1.41],stripe,.025,'vinyl');
       }
       for(const x of [-2.35,3.41])w.line(eraGroup,[new T.Vector3(x,3.75,.5),new T.Vector3(x,4.20,1.72)],'#48372b',.023);
       w.box(eraGroup,[5.97,.075,1.43],[.51,1.74,1.01],isPast?'#b28151':'#adb8af',isPast?'wood':'metal');
@@ -126,7 +189,7 @@ export class AtelierScene {
     const personGroup=new T.Group();personGroup.position.set(-.38,2.50,.26);g.add(personGroup);this.layer(personGroup,.52);
     this.keepers=[w.print(personGroup,keeper,1.73,2.60,[0,0,0],true,illustrated),w.print(personGroup,successor,1.73,2.60,[0,0,.002],true,illustrated)];this.keepers[1].visible=false;
     this.setPortraitFrame=illustrated?this.keepers.map((p,i)=>w.portraitAtlas(p as T.Mesh,i===1)):[w.portraitFrames(this.keepers[0] as T.Mesh,[keeperSpeak,...extra.slice(0,3),keeperBlink]),w.portraitFrames(this.keepers[1] as T.Mesh,[successorSpeak,...extra.slice(3),successorBlink],true)];
-    const meal=new T.Group();meal.position.set(.51,0,1.56);g.add(meal);this.layer(meal,1.65);
+    const meal=new T.Group();this.meal=meal;meal.userData.animationRoot=true;meal.position.set(.51,0,1.56);g.add(meal);this.layer(meal,1.65);
     const mealPrint=w.print(meal,bowl,1.42,.947,[0,0,0],true);mealPrint.geometry.computeBoundingBox();
     meal.position.y=1.7775-mealPrint.geometry.boundingBox!.min.y+.004;meal.rotation.y=.10;
     this.host.dataset.bowlClearance=(meal.position.y+mealPrint.geometry.boundingBox!.min.y-1.7775).toFixed(4);
@@ -189,7 +252,8 @@ export class AtelierScene {
     w.textures.forEach(texture=>this.renderer.initTexture(texture));
     await this.renderer.compileAsync(this.scene,this.camera);if(this.disposed)return;
     this.applyEra();this.panels.forEach(p=>p.rotation.y=this.era==='past'?0:Math.PI);
-    this.ready=true;this.status('ready');this.resize();this.last=performance.now();this.tick(this.last);
+    this.eraPlayhead.value=this.era==='past'?0:1;this.applyEraSequence();
+    this.ready=true;this.status('ready');this.resize();this.cadence.reset(performance.now());if(!document.hidden)this.frameLoop.start();
   }
   setMotion(enabled:boolean){
     this.motion=enabled;if(!enabled){this.drift.set(0,0);this.cameraTween?.progress(1);gsap.getTweensOf(this.exploded).forEach(t=>t.progress(1));this.setPortraitFrame.forEach(f=>f(0,0,0,0));}
@@ -206,10 +270,26 @@ export class AtelierScene {
   speakAgain(){this.speakingUntil=this.elapsed+8;this.nextBlink=this.elapsed+1.8;}
   setExploded(value:boolean){gsap.killTweensOf(this.exploded);gsap.to(this.exploded,{value:value?1:0,duration:this.motion?1.2:0,ease:'power2.inOut'});this.flat=value;}
   private applyEra(){this.past.visible=this.era==='past';this.present.visible=this.era==='present';this.keepers.forEach((m,i)=>m.visible=(this.era==='past'?i===0:i===1));this.host.dataset.era=this.era;this.onEra(this.era);}
+  private applyEraSequence(){
+    const frame=this.extension?.eraSequence?.frame(this.eraPlayhead.value);if(!frame)return;
+    this.panels.forEach((panel,i)=>panel.rotation.y=frame.panels[i]*Math.PI);
+    this.wallTravel.value=Math.sin(frame.wall*Math.PI);
+    this.canopies.forEach(c=>c.rotation.x=-Math.sin(frame.wall*Math.PI)*.95);
+    [this.past,this.present].forEach((g,i)=>{g.visible=frame.furniture<.5?i===0:i===1;g.scale.x=Math.max(.025,Math.abs(Math.cos(frame.furniture*Math.PI)));});
+    this.keepers.forEach((g,i)=>{g.visible=frame.keeper<.5?i===0:i===1;g.rotation.y=(frame.keeper<.5?frame.keeper:frame.keeper-1)*Math.PI;});
+    if(this.meal){this.meal.rotation.x=-Math.sin(frame.food*Math.PI)*.14;this.meal.scale.setScalar(1-Math.sin(frame.food*Math.PI)*.06);}
+    this.host.dataset.noodleEra=frame.keeper>=.5?'present':'past';
+  }
   setEra(era:Era){
     if(this.era===era)return;this.era=era;if(!this.ready)return;this.transition?.kill();this.setFocus('welcome');
     const angle=era==='past'?0:Math.PI;
     this.host.dataset.turning='true';this.onTurning(true);
+    if(this.extension?.eraSequence){
+      const end=era==='past'?0:1;
+      this.transition=gsap.timeline({onComplete:()=>{this.applyEraSequence();this.applyEra();this.host.dataset.turning='false';this.onTurning(false);this.transition=null;}})
+        .to(this.eraPlayhead,{value:end,duration:this.extension.eraSequence.duration*Math.abs(end-this.eraPlayhead.value),ease:'none'},0);
+      return;
+    }
     // Ambient pause does not cancel this deliberate action. UI changes at the turn's midpoint.
     this.transition=gsap.timeline({defaults:{ease:'power2.inOut'},onComplete:()=>{this.applyEra();this.host.dataset.turning='false';this.onTurning(false);this.transition=null;}})
       .to(this.wallTravel,{value:1,duration:.55},.45)
@@ -222,8 +302,8 @@ export class AtelierScene {
   private resize(){const b=this.host.getBoundingClientRect();this.size={w:b.width,h:b.height};if(!b.width||!b.height)return;this.renderer.setSize(b.width,b.height);this.camera.aspect=b.width/b.height;this.camera.updateProjectionMatrix();this.finish.resize(b.width,b.height);}
 
   private tick=(now:number)=>{
-    if(this.disposed||this.lost||document.hidden)return;this.frame=requestAnimationFrame(this.tick);if(now-this.last<1000/30)return;
-    const dt=Math.min((now-this.last)/1000,1);this.last=now;if(this.motion)this.elapsed+=dt;const t=this.elapsed;
+    if(this.disposed||this.lost||document.hidden)return;
+    const dt=this.cadence.advance(now);if(dt===null)return;if(this.motion)this.elapsed+=dt;const t=this.elapsed;
     this.extension?.beforeFrame?.(dt);
     const aspect=this.size.w/this.size.h;const view=views[this.focus];const distance=viewDistance(this.focus,aspect,this.camera.fov);
     this.drift.lerp(this.motion?this.pointer:new T.Vector2(),.045);
@@ -235,6 +315,7 @@ export class AtelierScene {
     else{this.camera.position.lerpVectors(this.focusStart,destination,this.focusBlend.value);this.target.lerpVectors(this.targetStart,custom?.target??new T.Vector3(...view.target),this.focusBlend.value);}
     this.camera.lookAt(this.target);this.camera.updateMatrixWorld();
     if(this.ready){
+      this.applyEraSequence();
       this.hanging.rotation.z=this.motion?Math.sin(t*.85)*.022:0;
       this.leaves.forEach((l,i)=>{l.rotation.z=this.motion?Math.sin(t*.65+i)*.035:0;});
       this.keepers.forEach((k,i)=>{k.scale.y=1+(this.motion?Math.sin(t*1.2+i)*.0025:0);k.rotation.z=this.motion?Math.sin(t*.47+i)*.003:0;});
@@ -250,8 +331,9 @@ export class AtelierScene {
       this.host.dataset.wallAngle=(this.panels[0].rotation.y*180/Math.PI).toFixed(1);
       this.host.dataset.wallAngles=this.panels.map(p=>(p.rotation.y*180/Math.PI).toFixed(1)).join(',');
       this.steam?.update(t,this.camera,!this.flat);this.host.dataset.steamTime=t.toFixed(2);
+      if(this.steam&&this.extension?.eraSequence){const food=this.extension.eraSequence.frame(this.eraPlayhead.value).food;this.steam.meshes.forEach(m=>m.material.uniforms.strength.value=.32*Math.pow(Math.abs(Math.cos(food*Math.PI)),4));}
       this.layers.forEach(l=>l.object.position.z=l.z+this.exploded.value*l.offset);
-      this.extension?.update(t,this.camera,this.panels[0].rotation.y/Math.PI,this.motion);
+      this.extension?.update(t,this.camera,this.extension.eraSequence?this.eraPlayhead.value:this.panels[0].rotation.y/Math.PI,this.motion);
       this.anchors.forEach((v,id)=>{const b=this.markers.get(id);if(!b)return;const p=v.clone().project(this.camera);b.style.transform=`translate(${(p.x*.5+.5)*this.size.w}px,${(-p.y*.5+.5)*this.size.h}px) translate(-50%,-50%)`;b.hidden=this.flat||this.focus!=='welcome'||p.z<0||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1;});
     }
     this.renderer.shadowMap.needsUpdate=true;this.renderer.info.autoReset=false;this.renderer.info.reset();this.finish.render();
@@ -261,7 +343,7 @@ export class AtelierScene {
     this.host.dataset.cameraTarget=this.target.toArray().map(v=>v.toFixed(2)).join(',');
     this.host.dataset.cameraPosition=this.camera.position.toArray().map(v=>v.toFixed(3)).join(',');
   };
-  dispose(){this.disposed=true;cancelAnimationFrame(this.frame);this.resizeObserver.disconnect();this.transition?.kill();this.cameraTween?.kill();gsap.killTweensOf(this.exploded);document.removeEventListener('visibilitychange',this.onVisibility);
+  dispose(){this.disposed=true;this.frameLoop.stop();this.resizeObserver.disconnect();this.transition?.kill();this.cameraTween?.kill();gsap.killTweensOf(this.exploded);document.removeEventListener('visibilitychange',this.onVisibility);
     this.host.removeEventListener('pointermove',this.move);this.host.removeEventListener('pointerdown',this.down);this.host.removeEventListener('pointerup',this.up);this.host.removeEventListener('pointercancel',this.up);this.host.removeEventListener('pointerleave',this.leave);
     this.renderer.domElement.removeEventListener('webglcontextlost',this.contextLost);this.renderer.domElement.removeEventListener('webglcontextrestored',this.contextRestored);
     this.extension?.dispose();this.scene.traverse(o=>{if(o instanceof T.DirectionalLight||o instanceof T.SpotLight||o instanceof T.PointLight)o.shadow?.dispose();});this.environment?.dispose();this.finish.dispose();this.workshop.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}

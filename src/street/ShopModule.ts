@@ -1,12 +1,13 @@
 import type * as T from 'three';
+import type {ShopEraFrame} from '../atelier/EraSequence';
 
-/** Shops share the street's renderer, resources and actual wall-turn progress. */
+/** Shops share the renderer and resources; their era layers receive independent local progress. */
 export interface ShopModule {
   readonly id: string;
   readonly root: T.Group;
   readonly anchors: ReadonlyMap<string, T.Vector3>;
   mount(socket: T.Group): void;
-  setEraProgress(turn: number): void;
+  setEraProgress(turn: number, frame?: ShopEraFrame): void;
   speak(): void;
   update(time: number, camera: T.Camera, motion: boolean): void;
   dispose(): void;
