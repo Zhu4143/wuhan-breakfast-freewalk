@@ -1,8 +1,12 @@
 {
   "version": "13.0.0",
-  "sourceCommit": "49c592616382ecd225c47f0f02c7811bcecd875d",
-  "publishedAt": "2026-10-09T06:57:15.440817+00:00",
+  "release": "2026-10-11",
+  "sourceCommit": "4c2773da5a49dd4ccfc77a26af56ae0cec387e04",
+  "publishedAt": "2026-10-11T07:46:23.9346538Z",
   "cultureVoices": 93,
   "mobileImages": 49,
-  "buildFiles": 261
+  "automatedTests": 104,
+  "buildFiles": 289,
+  "dualPreview": "?preview=dual",
+  "physicalPhoneTested": false
 }
